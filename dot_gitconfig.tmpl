@@ -1,0 +1,58 @@
+[user]
+	email = {{ .email }}
+	name = {{ .name }}
+{{- if .signingkey }}
+	signingkey = {{ .signingkey }}
+{{- end }}
+{{- if .signingkey }}
+[commit]
+	gpgsign = true
+[tag]
+	gpgsign = true
+{{- end }}
+[gpg]
+	format = ssh
+[init]
+	defaultBranch = main
+[core]
+	autocrlf = input
+	editor = nvim
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	side-by-side = true
+	line-numbers = true
+	syntax-theme = Catppuccin Mocha
+[merge]
+	conflictstyle = diff3
+	tool = nvim
+[mergetool "nvim"]
+	cmd = nvim -d $LOCAL $REMOTE $MERGED -c 'wincmd J'
+[diff]
+	colorMoved = default
+	tool = nvim
+[difftool "nvim"]
+	cmd = nvim -d $LOCAL $REMOTE
+[pull]
+	rebase = true
+[push]
+	autoSetupRemote = true
+	default = current
+[fetch]
+	prune = true
+[rebase]
+	autoStash = true
+[alias]
+	st = status -sb
+	co = checkout
+	cb = checkout -b
+	cm = commit -m
+	ca = commit --amend
+	ps = push
+	pl = pull --rebase
+	lg = log --oneline --graph --all -20
+	undo = reset --soft HEAD~1
+	wip = !git add -A && git commit -m 'wip: work in progress'
+	cleanup = !git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n 1 git branch -d
