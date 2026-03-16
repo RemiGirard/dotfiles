@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# tmux-project: create a full dev session with predefined window layout
+# Usage: tmux-project [path] [--port PORT]
+#
+# Creates a tmux session with:
+#   Window 1: nvim (editor)
+#   Window 2: dev server
+#   Window 3: docker compose logs (if docker-compose.yml exists)
+#   Window 4: AI agent (opencode)
+#   Window 5: terminal
+
+set -euo pipefail
+
+PORT="${PORT:-3000}"
+selected=""
+
+# Parse args
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --port) PORT="$2"; shift 2 ;;
+        *)      selected="$1"; shift ;;
+    esac
+done
+
+PROJECTS_DIR="${PROJECTS_DIR:-$HOME/Projects}"
+
+if [[ -z "$selected" ]]; then
+    selected=$(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 2 -type d \
+        -not -path '*/node_modules/*' \
+        -not -path '*/.git/*' \
+        -not -path '*/dist/*' \
+        -not -path '*/.next/*' \
+        | sort \
+        | fzf --prompt="project> " --height=40% --border --reverse)
+fi
+
+if [[ -z "$selected" ]]; then
+    exit 0
+fi
+
+session_name=$(basename "$selected" | tr '.' '_')
+
+# Kill existing session if it exists
+tmux kill-session -t "$session_name" 2>/dev/null || true
+
+# Window 1: editor
+tmux new-session -d -s "$session_name" -c "$selected" -n "editor"
+
+# Window 2: server
+tmux new-window -t "$session_name" -c "$selected" -n "server"
+
+# Window 3: docker (only if docker-compose exists)
+if [[ -f "$selected/docker-compose.yml" ]] || [[ -f "$selected/docker-compose.yaml" ]] || [[ -f "$selected/compose.yml" ]] || [[ -f "$selected/compose.yaml" ]]; then
+    tmux new-window -t "$session_name" -c "$selected" -n "docker"
+fi
+
+# Window 4: AI agent
+tmux new-window -t "$session_name" -c "$selected" -n "agent"
+
+# Window 5: terminal
+tmux new-window -t "$session_name" -c "$selected" -n "term"
+
+# Go back to editor window
+tmux select-window -t "$session_name:editor"
+
+# Attach or switch
+if [[ -z "${TMUX:-}" ]]; then
+    tmux attach -t "$session_name"
+else
+    tmux switch-client -t "$session_name"
+fi
+
+echo "Session '$session_name' ready (port: $PORT)"
+echo "  editor  -> nvim"
+echo "  server  -> run your dev server (port $PORT)"
+echo "  docker  -> docker compose logs"
+echo "  agent   -> opencode / claude"
+echo "  term    -> general terminal"
