@@ -1,0 +1,131 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# Packages hash: {{ include ".chezmoidata/packages.yaml" | sha256sum }}
+set -euo pipefail
+
+ARCH=$(dpkg --print-architecture)  # amd64 or arm64
+
+echo "==> Installing apt packages..."
+sudo apt update -qq
+sudo apt install -y \
+{{ range .packages.common }}  {{ . }} \
+{{ end -}}
+{{ range .packages.linux.apt }}  {{ . }} \
+{{ end }}
+
+# ── Helper: install .deb from GitHub release ──────────────────
+install_gh_deb() {
+    local repo="$1" pattern="$2" name="$3"
+    echo "==> Installing $name (latest from GitHub)..."
+    local url
+    url=$(curl -s "https://api.github.com/repos/${repo}/releases/latest" \
+        | jq -r '.assets[].browser_download_url' \
+        | grep -E "$pattern" \
+        | head -1)
+    if [ -n "$url" ]; then
+        wget -q "$url" -O "/tmp/${name}.deb"
+        sudo dpkg -i "/tmp/${name}.deb" || sudo apt-get install -f -y
+        rm -f "/tmp/${name}.deb"
+    else
+        echo "    WARNING: Could not find release for $name"
+    fi
+}
+
+# ── Neovim ────────────────────────────────────────────────────
+echo "==> Installing Neovim (latest stable)..."
+curl -Lo /tmp/nvim.tar.gz https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+sudo rm -rf /opt/nvim-linux-x86_64
+sudo tar -C /opt -xzf /tmp/nvim.tar.gz
+sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+rm -f /tmp/nvim.tar.gz
+
+# ── fzf ───────────────────────────────────────────────────────
+echo "==> Installing fzf (latest)..."
+FZF_VERSION=$(curl -s "https://api.github.com/repos/junegunn/fzf/releases/latest" | jq -r '.tag_name' | tr -d 'v')
+curl -Lo /tmp/fzf.tar.gz "https://github.com/junegunn/fzf/releases/latest/download/fzf-${FZF_VERSION}-linux_${ARCH}.tar.gz"
+sudo tar -C /usr/local/bin -xzf /tmp/fzf.tar.gz fzf
+rm -f /tmp/fzf.tar.gz
+
+# ── ripgrep (.deb) ────────────────────────────────────────────
+install_gh_deb "BurntSushi/ripgrep" "ripgrep_.*_${ARCH}\.deb$" "ripgrep"
+
+# ── fd (.deb, non-musl) ──────────────────────────────────────
+install_gh_deb "sharkdp/fd" "fd_[0-9].*_${ARCH}\.deb$" "fd"
+
+# ── bat (.deb, non-musl) ─────────────────────────────────────
+install_gh_deb "sharkdp/bat" "bat_[0-9].*_${ARCH}\.deb$" "bat"
+
+# ── delta (.deb) ──────────────────────────────────────────────
+install_gh_deb "dandavison/delta" "git-delta_.*_${ARCH}\.deb$" "delta"
+
+# ── eza (tarball) ─────────────────────────────────────────────
+echo "==> Installing eza (latest)..."
+curl -Lo /tmp/eza.tar.gz "$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest \
+    | jq -r '.assets[].browser_download_url' \
+    | grep 'eza_x86_64-unknown-linux-gnu\.tar\.gz$' \
+    | head -1)"
+sudo tar -C /usr/local/bin -xzf /tmp/eza.tar.gz
+rm -f /tmp/eza.tar.gz
+
+# ── lazygit (tarball) ─────────────────────────────────────────
+echo "==> Installing lazygit (latest)..."
+LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | tr -d 'v')
+curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+sudo tar -C /usr/local/bin -xzf /tmp/lazygit.tar.gz lazygit
+rm -f /tmp/lazygit.tar.gz
+
+# ── zoxide ────────────────────────────────────────────────────
+echo "==> Installing zoxide (latest)..."
+curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+
+# ── starship ──────────────────────────────────────────────────
+echo "==> Installing starship (latest)..."
+curl -sS https://starship.rs/install.sh | sh -s -- -y
+
+# ── Nerd Font ─────────────────────────────────────────────────
+FONT_DIR="$HOME/.local/share/fonts"
+if ! ls "$FONT_DIR"/JetBrainsMonoNerd* &>/dev/null 2>&1; then
+    echo "==> Installing JetBrainsMono Nerd Font..."
+    mkdir -p "$FONT_DIR"
+    TMP=$(mktemp -d)
+    curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz" -o "$TMP/font.tar.xz"
+    tar -xf "$TMP/font.tar.xz" -C "$FONT_DIR"
+    rm -rf "$TMP"
+    fc-cache -fv > /dev/null 2>&1
+fi
+
+# ── Set zsh as default shell ──────────────────────────────────
+if [ "$SHELL" != "$(which zsh)" ]; then
+    echo "==> Setting zsh as default shell..."
+    chsh -s "$(which zsh)"
+fi
+
+echo "==> Done! All tools installed from latest GitHub releases."
+
+{{ else if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Packages hash: {{ include ".chezmoidata/packages.yaml" | sha256sum }}
+set -euo pipefail
+
+if ! command -v brew &>/dev/null; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+brew bundle --no-lock --file=/dev/stdin <<EOF
+{{ range .packages.common -}}
+brew "{{ . }}"
+{{ end -}}
+{{ range .packages.darwin.brews -}}
+brew "{{ . }}"
+{{ end -}}
+{{ range .packages.darwin.casks -}}
+cask "{{ . }}"
+{{ end -}}
+EOF
+
+if [ "$SHELL" != "$(which zsh)" ]; then
+    chsh -s "$(which zsh)"
+fi
+
+echo "==> Done!"
+{{ end -}}

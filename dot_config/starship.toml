@@ -1,0 +1,66 @@
+format = """
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$rust\
+$docker_context\
+$cmd_duration\
+$line_break\
+$character"""
+
+right_format = """$time"""
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"
+vimcmd_symbol = "[<](bold blue)"
+
+[directory]
+truncation_length = 3
+truncation_symbol = ".../"
+style = "bold blue"
+
+[git_branch]
+format = "[$symbol$branch(:$remote_branch)]($style) "
+symbol = " "
+style = "bold purple"
+
+[git_status]
+format = '([$all_status$ahead_behind]($style) )'
+style = "bold red"
+ahead = "up${count}"
+behind = "down${count}"
+diverged = "div up${ahead_count} down${behind_count}"
+untracked = "?${count}"
+modified = "!${count}"
+staged = "+${count}"
+deleted = "x${count}"
+
+[nodejs]
+format = "[$symbol($version)]($style) "
+symbol = "node "
+style = "bold green"
+detect_files = ["package.json", ".node-version"]
+
+[rust]
+format = "[$symbol($version)]($style) "
+symbol = "rs "
+style = "bold red"
+
+[docker_context]
+format = "[$symbol$context]($style) "
+symbol = "docker "
+style = "blue bold"
+only_with_files = true
+
+[cmd_duration]
+min_time = 3_000
+format = "[$duration]($style) "
+style = "bold yellow"
+
+[time]
+disabled = false
+format = "[$time]($style)"
+style = "dimmed white"
+time_format = "%H:%M"

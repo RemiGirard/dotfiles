@@ -1,0 +1,123 @@
+# ── Zinit ──────────────────────────────────────────────────────
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+[ -d "$ZINIT_HOME" ] && source "${ZINIT_HOME}/zinit.zsh"
+
+if command -v zinit &>/dev/null; then
+    # 1. Completions: add to fpath before compinit
+    zinit light zsh-users/zsh-completions
+
+    # 2. compinit: initialize completion system
+    autoload -Uz compinit && compinit
+    zinit cdreplay -q
+
+    # 3. fzf-tab: must load AFTER compinit
+    zinit light Aloxaf/fzf-tab
+
+    # 4. These can load in any order
+    zinit light zsh-users/zsh-syntax-highlighting
+    zinit light zsh-users/zsh-autosuggestions
+fi
+
+# ── Autosuggestions ───────────────────────────────────────────
+# Strategy: try history first, then fall back to completion engine
+# Accept suggestion: right arrow (default)
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# ── Completion Styles ─────────────────────────────────────────
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+
+# ── History ───────────────────────────────────────────────────
+HISTSIZE=10000
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory sharehistory
+setopt hist_ignore_space hist_ignore_all_dups hist_save_no_dups
+setopt hist_ignore_dups hist_find_no_dups
+
+# ── Key Bindings (emacs mode) ─────────────────────────────────
+bindkey -e
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+bindkey '^[[A' history-search-backward    # Up arrow
+bindkey '^[[B' history-search-forward     # Down arrow
+
+# ── Environment ───────────────────────────────────────────────
+export EDITOR="nvim"
+export VISUAL="nvim"
+export LANG="en_US.UTF-8"
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+
+typeset -U path
+path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$HOME/.bun/bin" "$path[@]")
+
+# ── Aliases ───────────────────────────────────────────────────
+alias ..="cd .." ...="cd ../.." ....="cd ../../.."
+
+if command -v eza &>/dev/null; then
+    alias ls="eza --icons=always" ll="eza -la --icons=always --git"
+    alias lt="eza -la --icons=always --tree --level=2" l="eza -la --icons=always"
+elif command -v exa &>/dev/null; then
+    alias ls="exa --icons=always" ll="exa -la --icons=always"
+    alias lt="exa -la --icons=always --tree --level=2" l="exa -la --icons=always"
+fi
+
+alias g="git" gs="git status -sb" ga="git add" gc="git commit"
+alias gp="git push" gl="git log --oneline --graph --all -20"
+alias gd="git diff" gco="git checkout" gcb="git checkout -b"
+alias gpl="git pull --rebase" lg="lazygit"
+
+alias dc="docker compose" dcu="docker compose up -d"
+alias dcd="docker compose down" dcl="docker compose logs -f"
+alias dps="docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
+
+alias r="pnpm run" v="nvim" vim="nvim"
+alias oc="opencode" cc="claude"
+alias zshrc="chezmoi edit ~/.zshrc" tmuxrc="chezmoi edit ~/.tmux.conf" vimrc="chezmoi edit ~/.config/nvim/init.lua"
+alias cz="chezmoi" cza="chezmoi apply" cze="chezmoi edit" czd="chezmoi diff" czu="chezmoi update"
+
+# ── FZF ───────────────────────────────────────────────────────
+if command -v fzf &>/dev/null; then
+    eval "$(fzf --zsh 2>/dev/null)" || {
+        # Fallback for older fzf versions
+        [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+        [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+    }
+    export FZF_DEFAULT_OPTS=" \
+        --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+        --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+        --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+        --color=selected-bg:#45475a \
+        --border --layout=reverse --height=40%"
+    export FZF_DEFAULT_COMMAND="fd --type f --hidden --follow --exclude .git"
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
+
+# ── Zoxide ────────────────────────────────────────────────────
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init zsh)"
+    alias cd="z"
+fi
+
+# ── NVM (lazy) ────────────────────────────────────────────────
+export NVM_DIR="$HOME/.nvm"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+    nvm()  { unset -f nvm node npm npx; source "$NVM_DIR/nvm.sh"; nvm "$@"; }
+    node() { unset -f nvm node npm npx; source "$NVM_DIR/nvm.sh"; node "$@"; }
+    npm()  { unset -f nvm node npm npx; source "$NVM_DIR/nvm.sh"; npm "$@"; }
+    npx()  { unset -f nvm node npm npx; source "$NVM_DIR/nvm.sh"; npx "$@"; }
+fi
+
+# ── Bun / pnpm ────────────────────────────────────────────────
+[ -d "$HOME/.bun" ] && export BUN_INSTALL="$HOME/.bun" && path=("$BUN_INSTALL/bin" "$path[@]")
+export PNPM_HOME="$HOME/.local/share/pnpm"
+[ -d "$PNPM_HOME" ] && path=("$PNPM_HOME" "$path[@]")
+
+# ── Starship (keep last) ─────────────────────────────────────
+command -v starship &>/dev/null && eval "$(starship init zsh)"
