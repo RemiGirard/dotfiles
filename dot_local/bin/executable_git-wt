@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# git-wt: git worktree helper with tmux session integration
+# Usage:
+#   git wt add <branch> [--port PORT]  - Create worktree + tmux session
+#   git wt list                        - List worktrees with session status
+#   git wt switch                      - Fuzzy-find and switch to a worktree session
+#   git wt rm <branch>                 - Remove worktree + kill tmux session
+#   git wt clean                       - Remove all merged worktrees
+
+set -euo pipefail
+
+cmd="${1:-help}"
+shift || true
+
+# Get repo root and name
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+if [[ -z "$repo_root" ]]; then
+    echo "Not in a git repository"
+    exit 1
+fi
+repo_name=$(basename "$repo_root")
+
+case "$cmd" in
+    add)
+        branch="${1:?Usage: git wt add <branch> [--port PORT]}"
+        shift || true
+        PORT="${PORT:-3000}"
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --port) PORT="$2"; shift 2 ;;
+                *)      shift ;;
+            esac
+        done
+
+        worktree_path="${repo_root}-${branch}"
+
+        # Create worktree
+        if [[ -d "$worktree_path" ]]; then
+            echo "Worktree already exists at $worktree_path"
+        else
+            git worktree add "$worktree_path" -b "$branch" 2>/dev/null \
+                || git worktree add "$worktree_path" "$branch"
+            echo "Created worktree: $worktree_path"
+        fi
+
+        # Create tmux session
+        session_name="${repo_name}-${branch}"
+        session_name=$(echo "$session_name" | tr '.' '_' | tr '/' '-')
+
+        if tmux has-session -t="$session_name" 2>/dev/null; then
+            echo "Session '$session_name' already exists"
+        else
+            tmux-project "$worktree_path" --port "$PORT"
+        fi
+        ;;
+
+    list|ls)
+        echo "Worktrees for $repo_name:"
+        echo ""
+        git worktree list | while read -r path commit branch; do
+            wt_name=$(basename "$path")
+            session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+            if tmux has-session -t="$session_name" 2>/dev/null; then
+                status="[tmux: active]"
+            else
+                status=""
+            fi
+            printf "  %-40s %s %s\n" "$path" "$branch" "$status"
+        done
+        ;;
+
+    switch|sw)
+        worktree=$(git worktree list | fzf --prompt="worktree> " --height=40% --border --reverse | awk '{print $1}')
+        if [[ -n "$worktree" ]]; then
+            wt_name=$(basename "$worktree")
+            session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+
+            if ! tmux has-session -t="$session_name" 2>/dev/null; then
+                tmux-project "$worktree"
+            else
+                if [[ -z "${TMUX:-}" ]]; then
+                    tmux attach -t "$session_name"
+                else
+                    tmux switch-client -t "$session_name"
+                fi
+            fi
+        fi
+        ;;
+
+    rm|remove)
+        branch="${1:?Usage: git wt rm <branch>}"
+        worktree_path="${repo_root}-${branch}"
+        session_name="${repo_name}-${branch}"
+        session_name=$(echo "$session_name" | tr '.' '_' | tr '/' '-')
+
+        # Kill tmux session
+        tmux kill-session -t "$session_name" 2>/dev/null && echo "Killed session: $session_name"
+
+        # Remove worktree
+        git worktree remove "$worktree_path" 2>/dev/null \
+            && echo "Removed worktree: $worktree_path" \
+            || echo "Worktree not found: $worktree_path"
+        ;;
+
+    clean)
+        echo "Cleaning merged worktrees..."
+        git worktree list | tail -n +2 | while read -r path commit branch; do
+            branch_name=$(echo "$branch" | tr -d '[]')
+            if git branch --merged main 2>/dev/null | grep -q "$branch_name"; then
+                wt_name=$(basename "$path")
+                session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+                tmux kill-session -t "$session_name" 2>/dev/null || true
+                git worktree remove "$path" 2>/dev/null && echo "  Removed: $path ($branch_name)"
+            fi
+        done
+        git worktree prune
+        echo "Done."
+        ;;
+
+    help|*)
+        echo "git-wt: worktree + tmux session manager"
+        echo ""
+        echo "Usage:"
+        echo "  git wt add <branch> [--port PORT]  Create worktree + tmux session"
+        echo "  git wt list                        List worktrees with session status"
+        echo "  git wt switch                      Fuzzy-find and switch to worktree"
+        echo "  git wt rm <branch>                 Remove worktree + kill session"
+        echo "  git wt clean                       Remove all merged worktrees"
+        ;;
+esac

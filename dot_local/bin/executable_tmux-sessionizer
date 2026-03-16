@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# tmux-sessionizer: fuzzy-find a project and open/switch to a tmux session for it
+# Usage: tmux-sessionizer [path]
+# Bound to Ctrl+Space f in tmux, or `ts` alias in shell
+
+set -euo pipefail
+
+PROJECTS_DIR="${PROJECTS_DIR:-$HOME/Projects}"
+
+if [[ $# -eq 1 ]]; then
+    selected="$1"
+else
+    # Find project dirs (max 2 levels: projects + worktrees)
+    selected=$(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 2 -type d \
+        -not -path '*/node_modules/*' \
+        -not -path '*/.git/*' \
+        -not -path '*/dist/*' \
+        -not -path '*/.next/*' \
+        | sort \
+        | fzf --prompt="project> " --height=40% --border --reverse \
+              --preview 'ls -la {} | head -20' \
+              --preview-window=right:40%)
+fi
+
+if [[ -z "$selected" ]]; then
+    exit 0
+fi
+
+# Session name: last part of path, replace dots with underscores
+session_name=$(basename "$selected" | tr '.' '_')
+
+# If not in tmux, create/attach session
+if [[ -z "${TMUX:-}" ]]; then
+    tmux new-session -As "$session_name" -c "$selected"
+else
+    # Inside tmux: create session if needed, then switch
+    if ! tmux has-session -t="$session_name" 2>/dev/null; then
+        tmux new-session -ds "$session_name" -c "$selected"
+    fi
+    tmux switch-client -t "$session_name"
+fi
