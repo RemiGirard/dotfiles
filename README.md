@@ -51,6 +51,14 @@ chezmoi cd               # cd to source dir
 - `.chezmoiexternal.toml` auto-clones TPM and lazy.nvim
 - Zsh config auto-detects available tools (eza vs exa, etc.)
 
+## Keyboard
+
+[ZSA Voyager](https://www.zsa.io/voyager) with custom layout.
+
+- Layout: [Oryx configurator](https://configure.zsa.io/voyager/layouts/JmOPQ)
+- Firmware: `keyboard/zsa_voyager_JmOPQ_40vmR4_default-esc.bin`
+- Flash tool: [Keymapp](https://www.zsa.io/flash) (download, open, drag the `.bin` file onto it)
+
 ## Cheatsheets
 
 - [tmux](cheatsheets/tmux.md) -- Prefix `Ctrl+Space`, splits, sessions
