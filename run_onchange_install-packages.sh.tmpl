@@ -4,6 +4,7 @@
 set -euo pipefail
 
 ARCH=$(dpkg --print-architecture)  # amd64 or arm64
+UARCH=$(uname -m)                 # x86_64 or aarch64
 
 echo "==> Installing apt packages..."
 sudo apt update -qq
@@ -33,10 +34,10 @@ install_gh_deb() {
 
 # ── Neovim ────────────────────────────────────────────────────
 echo "==> Installing Neovim (latest stable)..."
-curl -Lo /tmp/nvim.tar.gz https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
-sudo rm -rf /opt/nvim-linux-x86_64
+curl -Lo /tmp/nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${UARCH}.tar.gz"
+sudo rm -rf /opt/nvim-linux-${UARCH}
 sudo tar -C /opt -xzf /tmp/nvim.tar.gz
-sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+sudo ln -sf /opt/nvim-linux-${UARCH}/bin/nvim /usr/local/bin/nvim
 rm -f /tmp/nvim.tar.gz
 
 # ── fzf ───────────────────────────────────────────────────────
@@ -62,7 +63,7 @@ install_gh_deb "dandavison/delta" "git-delta_.*_${ARCH}\.deb$" "delta"
 echo "==> Installing eza (latest)..."
 curl -Lo /tmp/eza.tar.gz "$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest \
     | jq -r '.assets[].browser_download_url' \
-    | grep 'eza_x86_64-unknown-linux-gnu\.tar\.gz$' \
+    | grep "eza_${UARCH}-unknown-linux-gnu\.tar\.gz$" \
     | head -1)"
 sudo tar -C /usr/local/bin -xzf /tmp/eza.tar.gz
 rm -f /tmp/eza.tar.gz
@@ -70,7 +71,8 @@ rm -f /tmp/eza.tar.gz
 # ── lazygit (tarball) ─────────────────────────────────────────
 echo "==> Installing lazygit (latest)..."
 LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | tr -d 'v')
-curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+if [ "$UARCH" = "aarch64" ]; then LG_ARCH="arm64"; else LG_ARCH="x86_64"; fi
+curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_${LG_ARCH}.tar.gz"
 sudo tar -C /usr/local/bin -xzf /tmp/lazygit.tar.gz lazygit
 rm -f /tmp/lazygit.tar.gz
 
@@ -92,6 +94,19 @@ if ! ls "$FONT_DIR"/JetBrainsMonoNerd* &>/dev/null 2>&1; then
     tar -xf "$TMP/font.tar.xz" -C "$FONT_DIR"
     rm -rf "$TMP"
     fc-cache -fv > /dev/null 2>&1
+fi
+
+# ── Node.js ─────────────────────────────────────────────────
+if ! command -v node &>/dev/null; then
+    echo "==> Installing Node.js (LTS)..."
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt install -y nodejs
+fi
+
+# ── OpenCode ─────────────────────────────────────────────────
+if ! command -v opencode &>/dev/null; then
+    echo "==> Installing OpenCode..."
+    curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/refs/heads/main/install | bash
 fi
 
 # ── Set zsh as default shell ──────────────────────────────────
