@@ -112,6 +112,9 @@ if ! command -v brew &>/dev/null; then
 fi
 
 brew bundle --file=/dev/stdin <<EOF
+{{ range .packages.darwin.taps -}}
+tap "{{ . }}"
+{{ end -}}
 {{ range .packages.common -}}
 brew "{{ . }}"
 {{ end -}}
@@ -128,7 +131,8 @@ if ! grep -qxF "$ZSH_PATH" /etc/shells; then
     echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
 fi
 
-if [ "$SHELL" != "$ZSH_PATH" ]; then
+CURRENT_SHELL="$(dscl . -read /Users/$(whoami) UserShell 2>/dev/null | awk '{print $2}')"
+if [ "$CURRENT_SHELL" != "$ZSH_PATH" ]; then
     chsh -s "$ZSH_PATH"
 fi
 

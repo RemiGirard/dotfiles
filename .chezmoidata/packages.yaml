@@ -33,6 +33,8 @@ packages:
       - neovim
 
   darwin:
+    taps:
+      - opencode-ai/tap
     brews:
       - fzf
       - ripgrep
@@ -46,6 +48,7 @@ packages:
       - neovim
       - node
       - rustup
+      - opencode-ai/tap/opencode
     casks:
       - ghostty
       - font-jetbrains-mono-nerd-font
