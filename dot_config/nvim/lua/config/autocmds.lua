@@ -32,6 +32,14 @@ autocmd("BufReadPost", {
 })
 
 autocmd("BufWritePre", {
+  group = augroup("eslint_fix_on_save", { clear = true }),
+  pattern = { "*.js", "*.jsx", "*.ts", "*.tsx" },
+  callback = function()
+    vim.cmd("silent! LspEslintFixAll")
+  end,
+})
+
+autocmd("BufWritePre", {
   group = augroup("auto_create_dir", { clear = true }),
   callback = function(event)
     if event.match:match("^%w%w+:[\\/][\\/]") then return end
