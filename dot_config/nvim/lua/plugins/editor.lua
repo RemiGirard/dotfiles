@@ -1,4 +1,11 @@
 return {
+  -- Free Ctrl+Space for tmux prefix (LazyVim maps it to flash treesitter)
+  {
+    "folke/flash.nvim",
+    keys = {
+      { "<c-space>", false },
+    },
+  },
   {
     "christoomey/vim-tmux-navigator",
     keys = {
