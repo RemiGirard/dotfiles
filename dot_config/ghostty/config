@@ -3,7 +3,7 @@ font-size = 14
 font-thicken = true
 adjust-cell-height = 20%
 
-theme = catppuccin-mocha
+theme = Catppuccin Mocha
 background-opacity = 0.95
 background-blur-radius = 20
 minimum-contrast = 1.1
