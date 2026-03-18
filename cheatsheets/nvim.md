@@ -4,19 +4,21 @@
 
 ## Survival (Week 1)
 
-| Key                    | Action              |
-| ---------------------- | ------------------- |
-| `i` / `Esc` (or `jk`)  | Insert / Normal     |
-| `Space w`              | Save                |
-| `:q`                   | Quit                |
-| `u` / `U`              | Undo / Redo         |
-| `Space`                | **Show all cmds**   |
+| Key            | Action              |
+| -------------- | ------------------- |
+| `i` / `Esc`    | Insert / Normal     |
+| `jk` or `kj`   | Exit insert mode    |
+| `;`            | Command mode (no :) |
+| `Space w`      | Save                |
+| `:q`           | Quit                |
+| `u` / `U`      | Undo / Redo         |
+| `Space`        | **Show all cmds**   |
 
 ## Navigation
 
 | Key           | Action                    |
 | ------------- | ------------------------- |
-| `h/j/k/l`     | Move                      |
+| `h/j/k/l`    | Move                      |
 | `w/b`         | Next/prev word            |
 | `0` / `$`     | Start/end of line         |
 | `gg` / `G`    | Top/bottom                |
@@ -24,9 +26,10 @@
 | `Space Space` | Find files                |
 | `Space /`     | Grep project              |
 | `Space ,`     | Switch buffer             |
-| `Space e`     | File explorer             |
+| `Space e`     | File explorer (neo-tree)  |
+| `Space E`     | Mini-files explorer       |
 
-## Harpoon
+## Harpoon (Quick File Marks)
 
 | Key         | Action       |
 | ----------- | ------------ |
@@ -38,14 +41,38 @@
 
 | Key                | Action                     |
 | ------------------ | -------------------------- |
-| `dd` / `yy` / `p`  | Delete / copy / paste line |
+| `dd` / `yy` / `p` | Delete / copy / paste line |
 | `ciw`              | Change word                |
 | `ci"`              | Change inside quotes       |
-| `V J/K`            | Move line up/down          |
+| `J` (visual)       | Move selection down        |
+| `K` (visual)       | Move selection up          |
 | `.`                | Repeat last action         |
-| `ysiw"`            | Surround word with "       |
-| `ds"`              | Delete surrounding "       |
-| `cs"'`             | Change " to '              |
+
+## Clipboard
+
+| Key       | Action                               |
+| --------- | ------------------------------------ |
+| `Space y` | Copy to system clipboard             |
+| `Space Y` | Copy line to system clipboard        |
+| `Space d` | Delete without yanking               |
+| `Space p` | Paste over selection (keep register) |
+
+## Surround (nvim-surround)
+
+| Key     | Action               |
+| ------- | -------------------- |
+| `ysiw"` | Surround word with " |
+| `ds"`   | Delete surrounding " |
+| `cs"'`  | Change " to '        |
+
+## Multi-Cursor (vim-visual-multi)
+
+| Key       | Action                    |
+| --------- | ------------------------- |
+| `Ctrl+n`  | Select word, add cursor   |
+| `Ctrl+n`  | (repeat) Add more cursors |
+| `n` / `N` | Skip / go back            |
+| `q`       | Remove current cursor     |
 
 ## LSP
 
@@ -57,14 +84,26 @@
 | `Space ca`  | Code action          |
 | `Space cr`  | Rename               |
 | `]d` / `[d` | Next/prev diagnostic |
+| `Space xx`  | Trouble: diagnostics |
+
+## Search & Replace
+
+| Key        | Action                     |
+| ---------- | -------------------------- |
+| `/pattern` | Search forward             |
+| `n` / `N`  | Next/prev match (centered) |
+| `Space sr` | Replace word under cursor  |
 
 ## Git
 
-| Key         | Action         |
-| ----------- | -------------- |
-| `Space gg`  | Lazygit        |
-| `Space gb`  | Blame line     |
-| `]h` / `[h` | Next/prev hunk |
+| Key         | Action                       |
+| ----------- | ---------------------------- |
+| `Space gg`  | Lazygit (full TUI)           |
+| `Space gn`  | Neogit (git UI inside nvim)  |
+| `Space gd`  | Diffview (side-by-side diff) |
+| `Space gh`  | File history (diffview)      |
+| `Space gb`  | Blame current line           |
+| `]h` / `[h` | Next/prev git hunk          |
 
 ## AI Agents
 
@@ -76,9 +115,37 @@
 | `Space ac` | CodeCompanion: Chat    |
 | `Space ai` | CodeCompanion: Actions |
 
+## Windows & Terminal
+
+| Key             | Action                    |
+| --------------- | ------------------------- |
+| `Ctrl+h/j/k/l` | Navigate splits (+ tmux)  |
+| `H` / `L`       | Prev/next buffer         |
+| `Space bd`      | Close buffer              |
+| `Space ft`      | Float terminal            |
+| `Esc Esc`       | Exit terminal mode        |
+| `Space qq`      | Quit all                  |
+
+## Other
+
+| Key         | Action                |
+| ----------- | --------------------- |
+| `Space U`   | Toggle undo tree      |
+| `]q` / `[q` | Next/prev quickfix   |
+| `Space l`   | Lazy plugin manager   |
+| `Space cm`  | Mason (LSP installer) |
+
+## Automatic Behaviors
+
+- ESLint auto-fix on save (JS/TS files)
+- Trailing whitespace stripped on save
+- Cursor restored to last position on file open
+- Parent directories auto-created on save
+- Yank text briefly highlights
+
 ## Learning Path
 
 - **Week 1**: `i`/`Esc`, `hjkl`, `Space Space`, `Space /`, `:w`/`:q`
-- **Week 2**: `w/b`, `dd/yy/p`, visual mode, `ciw`, `di"`
-- **Week 3**: surround, LSP (`gd`, `gr`, `K`), git
-- **Week 4**: harpoon, macros, multi-cursor, AI agents
+- **Week 2**: `w/b`, `dd/yy/p`, visual mode, `ciw`, `di"`, surround
+- **Week 3**: LSP (`gd`, `gr`, `K`), git (`Space gg`, `Space gn`), harpoon
+- **Week 4**: multi-cursor, macros (`q`), AI agents, diffview
