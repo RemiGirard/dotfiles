@@ -52,3 +52,4 @@ packages:
     casks:
       - ghostty
       - font-jetbrains-mono-nerd-font
+      - rectangle
