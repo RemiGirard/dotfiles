@@ -24,9 +24,9 @@ copy-on-select = clipboard
 clipboard-paste-protection = false
 
 {{ if eq .chezmoi.os "darwin" -}}
-command = /opt/homebrew/bin/tmux new-session -A -s main
+command = /opt/homebrew/bin/tmux new-session
 {{ else -}}
-command = /usr/bin/tmux new-session -A -s main
+command = /usr/bin/tmux new-session
 {{ end -}}
 shell-integration = zsh
 shell-integration-features = cursor,sudo,title
