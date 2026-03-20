@@ -144,5 +144,8 @@ fi
 export PNPM_HOME="$HOME/.local/share/pnpm"
 [ -d "$PNPM_HOME" ] && path=("$PNPM_HOME" "$path[@]")
 
+# ── OpenCode ─────────────────────────────────────────────────
+[ -d "$HOME/.opencode/bin" ] && path=("$HOME/.opencode/bin" "$path[@]")
+
 # ── Starship (keep last) ─────────────────────────────────────
 command -v starship &>/dev/null && eval "$(starship init zsh)"
