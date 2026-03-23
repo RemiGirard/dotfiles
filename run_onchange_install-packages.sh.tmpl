@@ -147,12 +147,10 @@ fi
 # ── hyperfine (.deb) ────────────────────────────────────────
 install_gh_deb "sharkdp/hyperfine" "hyperfine_.*_${ARCH}\.deb$" "hyperfine"
 
-# ── ttyper ───────────────────────────────────────────────────
-if ! command -v ttyper &>/dev/null; then
-    echo "==> Installing ttyper..."
-    cargo install ttyper 2>/dev/null || {
-        echo "    INFO: ttyper requires cargo. Install Rust first, then re-run."
-    }
+# ── smassh (typing practice) ─────────────────────────────────
+if ! command -v smassh &>/dev/null; then
+    echo "==> Installing smassh..."
+    pip3 install smassh || pipx install smassh
 fi
 
 # ── rustlings ────────────────────────────────────────────────
@@ -209,9 +207,11 @@ EOF
 
 # ── Cargo packages ──────────────────────────────────────────
 if command -v cargo &>/dev/null; then
-    command -v ttyper &>/dev/null || cargo install ttyper
     command -v rustlings &>/dev/null || cargo install rustlings
 fi
+
+# ── smassh (typing practice) ─────────────────────────────────
+command -v smassh &>/dev/null || pip3 install smassh || pipx install smassh
 
 ZSH_PATH="$(which zsh)"
 if ! grep -qxF "$ZSH_PATH" /etc/shells; then
