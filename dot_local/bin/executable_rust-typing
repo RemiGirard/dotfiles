@@ -128,7 +128,7 @@ case "${1:-}" in
         echo "Chapter: $selected ($(wc -l < "$file" | tr -d ' ') lines)"
         echo "Starting typing test... (Ctrl+C to quit)"
         echo ""
-        ttyper --custom-text "$file"
+        ttyper "$file"
         ;;
     *)
         chapter="$1"
@@ -145,6 +145,6 @@ case "${1:-}" in
         echo "Chapter: $name ($(wc -l < "$file" | tr -d ' ') lines)"
         echo "Starting typing test... (Ctrl+C to quit)"
         echo ""
-        ttyper --custom-text "$file"
+        ttyper "$file"
         ;;
 esac
