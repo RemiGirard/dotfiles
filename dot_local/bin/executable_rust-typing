@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# rust-typing: extract Rust code blocks from the Rust book and type them
+# Usage:
+#   rust-typing              - fuzzy-pick a chapter
+#   rust-typing <chapter>    - type a specific chapter (e.g. ch03-01)
+#   rust-typing --list       - list all chapters
+#   rust-typing --setup      - clone the Rust book repo
+
+set -euo pipefail
+
+BOOK_DIR="${HOME}/.local/share/rust-book"
+TYPING_DIR="${HOME}/.local/share/rust-typing"
+
+# ── Setup ────────────────────────────────────────────────────
+setup() {
+    if [[ -d "$BOOK_DIR" ]]; then
+        echo "Updating Rust book..."
+        git -C "$BOOK_DIR" pull --quiet
+    else
+        echo "Cloning the Rust book..."
+        git clone --depth 1 https://github.com/rust-lang/book.git "$BOOK_DIR"
+    fi
+    extract_all
+    echo "Done! $(ls "$TYPING_DIR"/*.txt 2>/dev/null | wc -l | tr -d ' ') chapters ready."
+}
+
+# ── Extract code blocks from a markdown file ─────────────────
+extract_code() {
+    local file="$1" output="$2"
+    awk '
+    /^```rust/ || /^```$/ && in_block { toggle = 1 }
+    /^```rust/      { in_block = 1; next }
+    /^```$/ && in_block { in_block = 0; print ""; next }
+    in_block && !/^#\s/ { print }
+    ' "$file" | sed '/^$/N;/^\n$/d' > "$output"
+}
+
+# ── Extract all chapters ─────────────────────────────────────
+extract_all() {
+    mkdir -p "$TYPING_DIR"
+    local src="$BOOK_DIR/src"
+
+    if [[ ! -d "$src" ]]; then
+        echo "Book not found. Run: rust-typing --setup"
+        exit 1
+    fi
+
+    for md in "$src"/ch*.md; do
+        local name
+        name=$(basename "$md" .md)
+        extract_code "$md" "$TYPING_DIR/${name}.txt"
+    done
+
+    # Remove empty files (chapters with no code)
+    find "$TYPING_DIR" -name "ch*.txt" -empty -delete
+}
+
+# ── List chapters ────────────────────────────────────────────
+list_chapters() {
+    if [[ ! -d "$TYPING_DIR" ]]; then
+        echo "No chapters extracted. Run: rust-typing --setup"
+        exit 1
+    fi
+
+    for f in "$TYPING_DIR"/ch*.txt; do
+        local name lines
+        name=$(basename "$f" .txt)
+        lines=$(wc -l < "$f" | tr -d ' ')
+        # Get the chapter title from the book
+        local title=""
+        local md="$BOOK_DIR/src/${name}.md"
+        if [[ -f "$md" ]]; then
+            title=$(head -1 "$md" | sed 's/^#\+ //')
+        fi
+        printf "  %-20s %3s lines   %s\n" "$name" "$lines" "$title"
+    done
+}
+
+# ── Main ─────────────────────────────────────────────────────
+case "${1:-}" in
+    --setup)
+        setup
+        ;;
+    --list)
+        list_chapters
+        ;;
+    --help|-h)
+        echo "rust-typing: type through the Rust book"
+        echo ""
+        echo "Usage:"
+        echo "  rust-typing              Fuzzy-pick a chapter"
+        echo "  rust-typing <chapter>    Type a specific chapter (e.g. ch03-01)"
+        echo "  rust-typing --list       List all chapters with line counts"
+        echo "  rust-typing --setup      Clone/update the Rust book and extract code"
+        echo "  rust-typing --help       Show this help"
+        ;;
+    "")
+        if [[ ! -d "$TYPING_DIR" ]]; then
+            echo "First run! Setting up..."
+            setup
+        fi
+
+        # Fuzzy pick a chapter
+        selected=$(ls "$TYPING_DIR"/ch*.txt 2>/dev/null \
+            | while read -r f; do
+                name=$(basename "$f" .txt)
+                lines=$(wc -l < "$f" | tr -d ' ')
+                md="$BOOK_DIR/src/${name}.md"
+                title=""
+                if [[ -f "$md" ]]; then
+                    title=$(head -1 "$md" | sed 's/^#\+ //')
+                fi
+                printf "%-20s %3s lines   %s\n" "$name" "$lines" "$title"
+            done \
+            | fzf --prompt="chapter> " --height=40% --border --reverse \
+            | awk '{print $1}')
+
+        if [[ -z "$selected" ]]; then
+            exit 0
+        fi
+
+        file="$TYPING_DIR/${selected}.txt"
+        if [[ ! -f "$file" ]] || [[ ! -s "$file" ]]; then
+            echo "No code blocks in $selected"
+            exit 1
+        fi
+
+        echo "Chapter: $selected ($(wc -l < "$file" | tr -d ' ') lines)"
+        echo "Starting typing test... (Ctrl+C to quit)"
+        echo ""
+        ttyper --custom-text "$file"
+        ;;
+    *)
+        chapter="$1"
+        # Allow both "ch03-01" and "ch03-01-variables-and-mutability"
+        file=$(ls "$TYPING_DIR"/${chapter}*.txt 2>/dev/null | head -1)
+
+        if [[ -z "$file" ]] || [[ ! -s "$file" ]]; then
+            echo "Chapter not found or has no code: $chapter"
+            echo "Run 'rust-typing --list' to see available chapters"
+            exit 1
+        fi
+
+        name=$(basename "$file" .txt)
+        echo "Chapter: $name ($(wc -l < "$file" | tr -d ' ') lines)"
+        echo "Starting typing test... (Ctrl+C to quit)"
+        echo ""
+        ttyper --custom-text "$file"
+        ;;
+esac
