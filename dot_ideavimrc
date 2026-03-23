@@ -1,0 +1,31 @@
+" PhpStorm + IdeaVim Configuration
+
+" Enable plugins
+set clipboard+=unnamed
+set surround
+set multiple-cursors
+set highlightedyank
+set ideajoin
+
+" Leader
+let mapleader = " "
+
+" Basic
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+set number
+set relativenumber
+set scrolloff=5
+
+" Mappings
+imap jk <Esc>
+imap kj <Esc>
+nmap <C-o> <Action>(Back)
+nmap <C-i> <Action>(Forward)
+nnoremap <leader>f :action SearchEverywhere<CR>
+nnoremap <leader>e :action ToolWindow.Project<CR>
+nnoremap <leader>t :action ToolWindow.Terminal<CR>
+nnoremap <leader>g :action Git<CR>
+nnoremap <leader>d :action recentFiles.ChangedFile<CR>
