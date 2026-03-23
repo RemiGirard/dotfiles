@@ -27,12 +27,12 @@ setup() {
 # ── Extract full chapter text from markdown ──────────────────
 extract_chapter() {
     local file="$1" output="$2"
-    sed \
-        -e 's/^#\+ //' \
+    sed -E \
+        -e 's/^#+ //' \
         -e 's/^> //' \
         -e '/^<span/d' \
         -e '/^<!--/,/-->/d' \
-        -e 's/\[([^]]*)\]([^)]*)/\1/g' \
+        -e 's/\[([^]]*)\]\([^)]*\)/\1/g' \
         -e 's/`//g' \
         -e 's/\*\*//g' \
         -e 's/\*//g' \
