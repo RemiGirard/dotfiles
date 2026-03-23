@@ -81,7 +81,7 @@ alias dcd="docker compose down" dcl="docker compose logs -f"
 alias dps="docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
 
 alias r="pnpm run" v="nvim" vim="nvim"
-alias oc="opencode" cc="claude"
+alias oc="opencode" cc="claude" rt="rust-typing"
 alias zshrc="chezmoi edit ~/.zshrc" tmuxrc="chezmoi edit ~/.tmux.conf" vimrc="chezmoi edit ~/.config/nvim/init.lua"
 alias cz="chezmoi" cza="chezmoi apply" cze="chezmoi edit" czd="chezmoi diff" czu="chezmoi update"
 

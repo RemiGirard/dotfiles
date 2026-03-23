@@ -147,6 +147,22 @@ fi
 # ── hyperfine (.deb) ────────────────────────────────────────
 install_gh_deb "sharkdp/hyperfine" "hyperfine_.*_${ARCH}\.deb$" "hyperfine"
 
+# ── ttyper ───────────────────────────────────────────────────
+if ! command -v ttyper &>/dev/null; then
+    echo "==> Installing ttyper..."
+    cargo install ttyper 2>/dev/null || {
+        echo "    INFO: ttyper requires cargo. Install Rust first, then re-run."
+    }
+fi
+
+# ── rustlings ────────────────────────────────────────────────
+if ! command -v rustlings &>/dev/null; then
+    echo "==> Installing rustlings..."
+    cargo install rustlings 2>/dev/null || {
+        echo "    INFO: rustlings requires cargo. Install Rust first, then re-run."
+    }
+fi
+
 # ── Rust ─────────────────────────────────────────────────────
 if ! command -v rustup &>/dev/null; then
     echo "==> Installing Rust (via rustup)..."
