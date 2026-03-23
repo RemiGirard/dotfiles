@@ -49,6 +49,12 @@ packages:
       - node
       - rustup
       - opencode-ai/tap/opencode
+      - btop
+      - yq
+      - tldr
+      - dust
+      - difftastic
+      - hyperfine
     casks:
       - ghostty
       - font-jetbrains-mono-nerd-font
