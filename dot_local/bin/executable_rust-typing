@@ -27,11 +27,20 @@ setup() {
 # ── Extract full chapter text from markdown ──────────────────
 extract_chapter() {
     local file="$1" output="$2"
-    sed -E \
-        -e '/^<[a-zA-Z]/d' \
-        -e '/^<!--/,/-->/d' \
-        -e '/^$/N;/^\n$/d' \
-        "$file" > "$output"
+    awk '
+    # Skip HTML tags and comments
+    /^<[a-zA-Z]/ || /^<\/[a-zA-Z]/ { next }
+    /^<!--/,/-->/ { next }
+    # Skip filename annotations
+    /^Filename:/ { next }
+    # Code fences: keep the code, drop the fence lines
+    /^```/ { next }
+    # Pass everything else
+    { print }
+    ' "$file" \
+    | fold -s -w 80 \
+    | sed -E '/^$/N;/^\n$/d' \
+    > "$output"
 }
 
 # ── Extract all chapters ─────────────────────────────────────
