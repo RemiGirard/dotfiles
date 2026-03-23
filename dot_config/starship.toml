@@ -3,7 +3,9 @@ $directory\
 $git_branch\
 $git_status\
 $nodejs\
+$python\
 $rust\
+$package\
 $docker_context\
 $cmd_duration\
 $line_break\
@@ -49,6 +51,16 @@ detect_files = ["package.json", ".node-version"]
 format = "[$symbol($version)]($style) "
 symbol = "rs "
 style = "bold red"
+
+[python]
+format = "[$symbol($version)]($style) "
+symbol = "py "
+style = "bold yellow"
+
+[package]
+format = "[$symbol$version]($style) "
+symbol = "pkg "
+style = "bold 208"
 
 [docker_context]
 format = "[$symbol$context]($style) "

@@ -53,6 +53,7 @@ bindkey '^[[B' history-search-forward     # Down arrow
 export EDITOR="nvim"
 export VISUAL="nvim"
 export LANG="en_US.UTF-8"
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"

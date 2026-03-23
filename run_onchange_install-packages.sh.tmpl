@@ -103,6 +103,50 @@ if ! command -v node &>/dev/null; then
     sudo apt install -y nodejs
 fi
 
+# ── btop ──────────────────────────────────────────────────────
+if ! command -v btop &>/dev/null; then
+    echo "==> Installing btop..."
+    sudo apt install -y btop || {
+        # Fallback: install from snap if apt version is too old
+        sudo snap install btop
+    }
+fi
+
+# ── yq ───────────────────────────────────────────────────────
+if ! command -v yq &>/dev/null; then
+    echo "==> Installing yq (latest)..."
+    YQ_URL=$(curl -s "https://api.github.com/repos/mikefarah/yq/releases/latest" \
+        | jq -r '.assets[].browser_download_url' \
+        | grep "yq_linux_${ARCH}$" \
+        | head -1)
+    sudo wget -q "$YQ_URL" -O /usr/local/bin/yq
+    sudo chmod +x /usr/local/bin/yq
+fi
+
+# ── tldr ─────────────────────────────────────────────────────
+if ! command -v tldr &>/dev/null; then
+    echo "==> Installing tldr..."
+    npm install -g tldr || sudo npm install -g tldr
+fi
+
+# ── dust ─────────────────────────────────────────────────────
+install_gh_deb "bootandy/dust" "du-dust_.*_${ARCH}\.deb$" "dust"
+
+# ── difftastic ───────────────────────────────────────────────
+if ! command -v difft &>/dev/null; then
+    echo "==> Installing difftastic (latest)..."
+    DIFFT_URL=$(curl -s "https://api.github.com/repos/Wilfred/difftastic/releases/latest" \
+        | jq -r '.assets[].browser_download_url' \
+        | grep "${UARCH}-unknown-linux-gnu\.tar\.gz$" \
+        | head -1)
+    curl -Lo /tmp/difft.tar.gz "$DIFFT_URL"
+    sudo tar -C /usr/local/bin -xzf /tmp/difft.tar.gz difft
+    rm -f /tmp/difft.tar.gz
+fi
+
+# ── hyperfine (.deb) ────────────────────────────────────────
+install_gh_deb "sharkdp/hyperfine" "hyperfine_.*_${ARCH}\.deb$" "hyperfine"
+
 # ── Rust ─────────────────────────────────────────────────────
 if ! command -v rustup &>/dev/null; then
     echo "==> Installing Rust (via rustup)..."
