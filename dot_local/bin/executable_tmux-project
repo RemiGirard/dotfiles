@@ -40,8 +40,15 @@ fi
 
 session_name=$(basename "$selected" | tr '.' '_')
 
-# Kill existing session if it exists
-tmux kill-session -t "$session_name" 2>/dev/null || true
+# If session already exists, just attach to it
+if tmux has-session -t="$session_name" 2>/dev/null; then
+    if [[ -z "${TMUX:-}" ]]; then
+        tmux attach -t "$session_name"
+    else
+        tmux switch-client -t "$session_name"
+    fi
+    exit 0
+fi
 
 # Window 1: editor
 tmux new-session -d -s "$session_name" -c "$selected" -n "editor"
@@ -69,10 +76,3 @@ if [[ -z "${TMUX:-}" ]]; then
 else
     tmux switch-client -t "$session_name"
 fi
-
-echo "Session '$session_name' ready (port: $PORT)"
-echo "  editor  -> nvim"
-echo "  server  -> run your dev server (port $PORT)"
-echo "  docker  -> docker compose logs"
-echo "  agent   -> opencode / claude"
-echo "  term    -> general terminal"
