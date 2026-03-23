@@ -55,8 +55,6 @@ packages:
       - dust
       - difftastic
       - hyperfine
-      - ttyper
-      - rustlings
     casks:
       - ghostty
       - font-jetbrains-mono-nerd-font

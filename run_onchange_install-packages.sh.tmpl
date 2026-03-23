@@ -207,6 +207,12 @@ cask "{{ . }}"
 {{ end -}}
 EOF
 
+# ── Cargo packages ──────────────────────────────────────────
+if command -v cargo &>/dev/null; then
+    command -v ttyper &>/dev/null || cargo install ttyper
+    command -v rustlings &>/dev/null || cargo install rustlings
+fi
+
 ZSH_PATH="$(which zsh)"
 if ! grep -qxF "$ZSH_PATH" /etc/shells; then
     echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
