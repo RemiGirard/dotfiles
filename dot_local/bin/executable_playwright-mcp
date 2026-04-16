@@ -1,0 +1,84 @@
+#!/bin/bash
+# playwright-mcp: Manage Playwright MCP as a persistent HTTP server
+# Usage: playwright-mcp start|stop|restart|status
+set -euo pipefail
+
+PORT=8931
+PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/playwright-mcp.pid"
+LOGFILE="${HOME}/.local/share/playwright-mcp/server.log"
+SECRETS="${HOME}/.config/opencode/playwright/.secrets"
+
+mkdir -p "$(dirname "$LOGFILE")"
+
+start_server() {
+    if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+        echo "Playwright MCP already running (PID $(cat "$PIDFILE")) on port $PORT"
+        return 0
+    fi
+
+    local args=(
+        npx -y @playwright/mcp@latest
+        --port "$PORT"
+        --caps vision
+        --viewport-size 1280x720
+        --timeout-action 15000
+        --block-service-workers
+    )
+
+    # Add secrets if file exists
+    if [[ -f "$SECRETS" ]]; then
+        args+=(--secrets "$SECRETS")
+    fi
+
+    echo "Starting Playwright MCP on port $PORT..."
+    nohup "${args[@]}" >> "$LOGFILE" 2>&1 &
+    echo $! > "$PIDFILE"
+    echo "Playwright MCP started (PID $!) -- log: $LOGFILE"
+}
+
+stop_server() {
+    if [[ -f "$PIDFILE" ]]; then
+        local pid
+        pid=$(cat "$PIDFILE")
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "Stopping Playwright MCP (PID $pid)..."
+            kill "$pid" 2>/dev/null || true
+            # Wait for graceful shutdown
+            for i in {1..10}; do
+                kill -0 "$pid" 2>/dev/null || break
+                sleep 0.5
+            done
+            # Force kill if still alive
+            kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
+            echo "Playwright MCP stopped."
+        else
+            echo "Playwright MCP not running (stale PID file)."
+        fi
+        rm -f "$PIDFILE"
+    else
+        echo "Playwright MCP not running."
+    fi
+}
+
+status_server() {
+    if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+        echo "Playwright MCP running (PID $(cat "$PIDFILE")) on port $PORT"
+        # Check if port is actually responding
+        if curl -s -o /dev/null -w '' "http://localhost:$PORT/mcp" 2>/dev/null; then
+            echo "HTTP endpoint responding."
+        fi
+    else
+        echo "Playwright MCP not running."
+    fi
+}
+
+case "${1:-}" in
+    start)   start_server ;;
+    stop)    stop_server ;;
+    restart) stop_server; sleep 1; start_server ;;
+    status)  status_server ;;
+    *)
+        echo "Usage: playwright-mcp {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

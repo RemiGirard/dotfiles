@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# focus-guard: Prevent applications from stealing window focus (Linux/X11)
+# Usage: focus-guard start|stop|status
+# Requires: xdotool (apt install xdotool)
+#
+# How it works:
+# - Monitors the active window every 0.3s
+# - If focus changes without recent mouse/keyboard activity, refocuses the previous window
+# - Manual switches (mouse click, Alt+Tab) are tracked and allowed
+
+set -euo pipefail
+
+PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/focus-guard.pid"
+LOGFILE="${XDG_RUNTIME_DIR:-/tmp}/focus-guard.log"
+GRACE_PERIOD=1  # seconds after manual input to allow focus changes
+
+guard_loop() {
+    local active_window last_input_time current_input_time new_window
+
+    active_window=$(xdotool getactivewindow 2>/dev/null || echo "")
+    last_input_time=$(xprintidle 2>/dev/null || echo "0")
+
+    while true; do
+        sleep 0.3
+
+        new_window=$(xdotool getactivewindow 2>/dev/null || echo "")
+        current_input_time=$(xprintidle 2>/dev/null || echo "0")
+
+        # If no window tracked yet, just track
+        if [[ -z "$active_window" ]]; then
+            active_window="$new_window"
+            last_input_time="$current_input_time"
+            continue
+        fi
+
+        # If window changed
+        if [[ "$new_window" != "$active_window" ]]; then
+            # If there was recent user input (idle time < grace period in ms),
+            # this is a manual switch -- allow it
+            if [[ "$current_input_time" -lt $((GRACE_PERIOD * 1000)) ]]; then
+                active_window="$new_window"
+                echo "$(date '+%H:%M:%S') Manual switch to $(xdotool getactivewindow getwindowname 2>/dev/null)" >> "$LOGFILE"
+            else
+                # No recent input -- focus was stolen, refocus
+                local stealer
+                stealer=$(xdotool getactivewindow getwindowname 2>/dev/null || echo "unknown")
+                echo "$(date '+%H:%M:%S') Blocked focus steal by: $stealer" >> "$LOGFILE"
+                xdotool windowactivate "$active_window" 2>/dev/null || true
+                notify-send "Focus Guard" "$stealer tried to steal focus" 2>/dev/null || true
+            fi
+        fi
+
+        last_input_time="$current_input_time"
+    done
+}
+
+case "${1:-}" in
+    start)
+        if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+            echo "focus-guard already running (PID $(cat "$PIDFILE"))"
+            exit 0
+        fi
+        # Check dependencies
+        for cmd in xdotool xprintidle; do
+            if ! command -v "$cmd" &>/dev/null; then
+                echo "Missing dependency: $cmd (install with: sudo apt install $cmd)"
+                exit 1
+            fi
+        done
+        echo "Starting focus-guard..."
+        guard_loop &
+        echo $! > "$PIDFILE"
+        echo "focus-guard started (PID $!)"
+        ;;
+    stop)
+        if [[ -f "$PIDFILE" ]]; then
+            kill "$(cat "$PIDFILE")" 2>/dev/null || true
+            rm -f "$PIDFILE"
+            echo "focus-guard stopped"
+        else
+            echo "focus-guard not running"
+        fi
+        ;;
+    status)
+        if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+            echo "focus-guard running (PID $(cat "$PIDFILE"))"
+        else
+            echo "focus-guard not running"
+        fi
+        ;;
+    *)
+        echo "Usage: focus-guard {start|stop|status}"
+        exit 1
+        ;;
+esac

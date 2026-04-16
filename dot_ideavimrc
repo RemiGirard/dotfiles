@@ -1,16 +1,17 @@
 " PhpStorm + IdeaVim Configuration
+" Aligned with Neovim (LazyVim) keybindings where possible
 
-" Enable plugins
+" Plugins
 set clipboard+=unnamed
 set surround
 set multiple-cursors
 set highlightedyank
 set ideajoin
-
-" Leader
-let mapleader = " "
+set which-key
+set NERDTree
 
 " Basic
+let mapleader = " "
 set ignorecase
 set smartcase
 set incsearch
@@ -18,14 +19,69 @@ set hlsearch
 set number
 set relativenumber
 set scrolloff=5
+set timeoutlen=500
 
-" Mappings
+" --- Insert mode ---
 imap jk <Esc>
 imap kj <Esc>
+
+" --- Navigation (aligned with nvim LSP) ---
+nmap gd <Action>(GotoDeclaration)
+nmap gi <Action>(GotoImplementation)
+nmap gr <Action>(FindUsages)
+nmap K <Action>(QuickJavaDoc)
 nmap <C-o> <Action>(Back)
 nmap <C-i> <Action>(Forward)
-nnoremap <leader>f :action SearchEverywhere<CR>
-nnoremap <leader>e :action ToolWindow.Project<CR>
-nnoremap <leader>t :action ToolWindow.Terminal<CR>
-nnoremap <leader>g :action Git<CR>
-nnoremap <leader>d :action recentFiles.ChangedFile<CR>
+
+" --- Search / Find (aligned with LazyVim <leader>f and <leader>s) ---
+nnoremap <leader><leader> :action SearchEverywhere<CR>
+nnoremap <leader>ff :action GotoFile<CR>
+nnoremap <leader>sg :action FindInPath<CR>
+nnoremap <leader>sr :action ReplaceInPath<CR>
+nnoremap <leader>ss :action GotoSymbol<CR>
+
+" --- File explorer (aligned with LazyVim <leader>e) ---
+nnoremap <leader>e :NERDTreeToggle<CR>
+
+" --- Code actions (aligned with LazyVim) ---
+nnoremap <leader>ca :action ShowIntentionActions<CR>
+nnoremap <leader>cr :action RenameElement<CR>
+nnoremap <leader>cf :action ReformatCode<CR>
+
+" --- Diagnostics (aligned with LazyVim trouble.nvim) ---
+nnoremap ]d :action GotoNextError<CR>
+nnoremap [d :action GotoPreviousError<CR>
+nnoremap <leader>xx :action ProblemsView.ToolWindow<CR>
+
+" --- Git (aligned with LazyVim) ---
+nnoremap <leader>gg :action ActivateVersionControlToolWindow<CR>
+nnoremap ]h :action VcsShowNextChangeMarker<CR>
+nnoremap [h :action VcsShowPrevChangeMarker<CR>
+
+" --- Buffers / Tabs ---
+nnoremap <leader>bd :action CloseContent<CR>
+nnoremap H :action PreviousTab<CR>
+nnoremap L :action NextTab<CR>
+
+" --- Windows (aligned with LazyVim <leader>w) ---
+nnoremap <leader>wd <C-w>c
+nnoremap <leader>ws <C-w>s
+nnoremap <leader>wv <C-w>v
+
+" --- Terminal ---
+nnoremap <leader>t :action ActivateTerminalToolWindow<CR>
+
+" --- Misc ---
+nnoremap <leader>qq :action Exit<CR>
+nnoremap U <C-r>
+
+" --- Text manipulation (aligned with nvim keymaps.lua) ---
+nnoremap J mzJ`z
+vnoremap J :action MoveLineDown<CR>
+vnoremap K :action MoveLineUp<CR>
+xnoremap <leader>p "_dP
+nnoremap <leader>d "_d
+vnoremap <leader>d "_d
+nnoremap <leader>y "+y
+vnoremap <leader>y "+y
+nnoremap <leader>Y "+Y

@@ -3,6 +3,7 @@ local opt = vim.opt
 opt.relativenumber = true
 opt.scrolloff = 8
 opt.sidescrolloff = 8
+opt.scroll = 10
 opt.cursorline = true
 opt.termguicolors = true
 opt.signcolumn = "yes"

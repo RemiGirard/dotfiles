@@ -9,7 +9,7 @@
 | `i` / `Esc`    | Insert / Normal     |
 | `jk` or `kj`   | Exit insert mode    |
 | `;`            | Command mode (no :) |
-| `Space w`      | Save                |
+| `Ctrl+s`       | Save                |
 | `:q`           | Quit                |
 | `u` / `U`      | Undo / Redo         |
 | `Space`        | **Show all cmds**   |
@@ -22,7 +22,7 @@
 | `w/b`         | Next/prev word            |
 | `0` / `$`     | Start/end of line         |
 | `gg` / `G`    | Top/bottom                |
-| `Ctrl+d/u`    | Scroll down/up (centered) |
+| `Ctrl+d/u`    | Scroll down/up (smooth, 10 lines) |
 | `Space Space` | Find files                |
 | `Space /`     | Grep project              |
 | `Space ,`     | Switch buffer             |
@@ -122,9 +122,28 @@
 | `Ctrl+h/j/k/l` | Navigate splits (+ tmux)  |
 | `H` / `L`       | Prev/next buffer         |
 | `Space bd`      | Close buffer              |
+| `Space wd`      | Close window              |
+| `Space ws`      | Split horizontal          |
+| `Space wv`      | Split vertical            |
 | `Space ft`      | Float terminal            |
 | `Esc Esc`       | Exit terminal mode        |
 | `Space qq`      | Quit all                  |
+
+## Chezmoi
+
+| Key         | Action                  |
+| ----------- | ----------------------- |
+| `Space cz`  | Browse chezmoi files    |
+
+> chezmoi.nvim auto-applies changes on save when editing managed files.
+
+## Inc-Rename / Dial / Yanky
+
+| Key         | Action                            |
+| ----------- | --------------------------------- |
+| `Space cr`  | Inc-rename (inline preview)       |
+| `Ctrl+a/x`  | Increment/decrement (dial.nvim)  |
+| `p` (after yank) | Yanky paste (cycle with `<C-p>`/`<C-n>`) |
 
 ## Other
 
@@ -145,7 +164,7 @@
 
 ## Learning Path
 
-- **Week 1**: `i`/`Esc`, `hjkl`, `Space Space`, `Space /`, `:w`/`:q`
+- **Week 1**: `i`/`Esc`, `hjkl`, `Space Space`, `Space /`, `Ctrl+s`/`:q`
 - **Week 2**: `w/b`, `dd/yy/p`, visual mode, `ciw`, `di"`, surround
 - **Week 3**: LSP (`gd`, `gr`, `K`), git (`Space gg`, `Space gn`), harpoon
-- **Week 4**: multi-cursor, macros (`q`), AI agents, diffview
+- **Week 4**: multi-cursor, macros (`q`), AI agents, diffview, chezmoi (`Space cz`)

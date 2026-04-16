@@ -21,7 +21,7 @@ return {
           },
         },
         notify = true,
-        nvimtree = true,
+        neotree = true,
         telescope = { enabled = true },
         treesitter = true,
         which_key = true,
