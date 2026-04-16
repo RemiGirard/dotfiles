@@ -1,0 +1,21 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# Configure Linux-specific settings
+set -euo pipefail
+
+echo "==> Configuring Compose key (Right Alt)..."
+if command -v gsettings &>/dev/null; then
+    gsettings set org.gnome.desktop.input-sources xkb-options "['compose:ralt']"
+    echo "==> Compose key set to Right Alt."
+else
+    echo "==> gsettings not found, skipping Compose key setup."
+    echo "    Set manually: Settings → Keyboard → Compose Key → Right Alt"
+fi
+
+echo "==> Installing focus-guard dependencies..."
+if command -v apt &>/dev/null; then
+    sudo apt install -y xdotool xprintidle 2>/dev/null || echo "    Could not install xdotool/xprintidle (run manually: sudo apt install xdotool xprintidle)"
+fi
+
+echo "==> Linux configuration done."
+{{ end -}}

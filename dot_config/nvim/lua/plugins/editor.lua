@@ -23,7 +23,7 @@ return {
   },
   {
     "folke/trouble.nvim",
-    opts = { use_diagnostic_signs = true },
+    opts = {},
   },
   {
     "mbbill/undotree",
@@ -69,6 +69,24 @@ return {
     },
     opts = {
       integrations = { diffview = true, telescope = true },
+    },
+  },
+  -- Chezmoi template highlighting and apply-on-save
+  {
+    "alker0/chezmoi.vim",
+    lazy = false,
+    init = function()
+      vim.g["chezmoi#use_tmp_buffer"] = true
+    end,
+  },
+  {
+    "xvzc/chezmoi.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    keys = {
+      { "<leader>cz", function() require("chezmoi.telescope").select() end, desc = "Chezmoi managed files" },
+    },
+    opts = {
+      edit = { watch = true },
     },
   },
 }

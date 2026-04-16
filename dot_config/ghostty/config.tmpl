@@ -27,16 +27,27 @@ copy-on-select = clipboard
 clipboard-paste-protection = false
 
 {{ if eq .chezmoi.os "darwin" -}}
-command = /opt/homebrew/bin/tmux new-session
+command = /opt/homebrew/bin/tmux new-session -A -s main
 {{ else -}}
-command = /usr/bin/tmux new-session
+command = /usr/bin/tmux new-session -A -s main
 {{ end -}}
 shell-integration-features = cursor,sudo,title
 
-keybind = super+t=new_tab
-keybind = super+w=close_surface
-keybind = super+shift+left_bracket=previous_tab
-keybind = super+shift+right_bracket=next_tab
+custom-shader = ~/.config/ghostty/shaders/cursor_smear_fade.glsl
+
+keybind = super+t=text:\x00c
+keybind = super+w=text:\x00&
+keybind = ctrl+tab=text:\x00n
+keybind = ctrl+shift+tab=text:\x00p
+keybind = super+one=text:\x001
+keybind = super+two=text:\x002
+keybind = super+three=text:\x003
+keybind = super+four=text:\x004
+keybind = super+five=text:\x005
+keybind = super+six=text:\x006
+keybind = super+seven=text:\x007
+keybind = super+eight=text:\x008
+keybind = super+nine=text:\x009
 keybind = super+equal=increase_font_size:1
 keybind = super+minus=decrease_font_size:1
 keybind = super+zero=reset_font_size

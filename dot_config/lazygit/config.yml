@@ -1,0 +1,27 @@
+gui:
+  showBottomLine: false
+  showCommandLog: false
+  nerdFontsVersion: "3"
+  theme:
+    selectedLineBgColor:
+      - "#45475a"
+    activeBorderColor:
+      - "#89b4fa"
+      - bold
+    inactiveBorderColor:
+      - "#585b70"
+    searchingActiveBorderColor:
+      - "#f9e2af"
+      - bold
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+  autoFetch: true
+  autoRefresh: true
+os:
+  editPreset: "nvim-remote"
+keybinding:
+  universal:
+    quit: "q"
+    quit-alt1: "<c-c>"

@@ -4,7 +4,7 @@
 
 ```bash
 # 1. Install tools (already in chezmoi packages)
-# ttyper    — terminal typing test
+# smassh    — terminal typing test
 # rustlings — interactive Rust exercises
 
 # 2. Initialize the Rust book typing content
@@ -32,7 +32,7 @@ rt --list
 rt --setup
 ```
 
-**Inside ttyper:**
+**Inside smassh:**
 | Key         | Action                   |
 |-------------|--------------------------|
 | Type        | Match the displayed text |

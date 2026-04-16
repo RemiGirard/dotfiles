@@ -1,185 +1,175 @@
 # PhpStorm + IdeaVim Cheatsheet
 
-> Primary: Ubuntu/Linux defaults. macOS equivalents in parentheses.
-> Custom IdeaVim mappings (managed by chezmoi) are marked with ★
-
 ## Essential Shortcuts
 
 ### Search & Navigation
 
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Shift Shift` | `⇧⇧` | Search Everywhere |
-| `Ctrl+N` | `⌘O` | Go to class |
-| `Ctrl+Shift+N` | `⌘⇧O` | Go to file |
-| `Ctrl+Alt+Shift+N` | `⌘⌥⇧O` | Go to symbol |
-| `Ctrl+E` | `⌘E` | Recent files |
-| `Ctrl+Shift+E` | `⌘⇧E` | Recent locations |
-| `Ctrl+Shift+A` | `⌘⇧A` | Find action |
-| `Ctrl+B` | `⌘B` | Go to declaration/usages |
-| `Ctrl+Alt+B` | `⌘⌥B` | Go to implementation |
-| `Ctrl+U` | `⌘U` | Go to super method |
-| `Ctrl+G` | `⌘G` | Go to line |
-| `Alt+Left/Right` | `⌥←/→` | Navigate back/forward |
-| `F2` / `Shift+F2` | `F2` / `⇧F2` | Next/prev error |
+| Shortcut     | Action                                      |
+| ------------ | ------------------------------------------- |
+| `⇧⇧`         | Search Everywhere (files, classes, actions) |
+| `⌘O`         | Go to class                                 |
+| `⌘⇧O`        | Go to file                                  |
+| `⌘⌥⇧O`       | Go to symbol                                |
+| `⌘E`         | Recent files                                |
+| `⌘⇧E`        | Recent locations                            |
+| `⌘⇧A`        | Find action                                 |
+| `⌘B`         | Go to declaration/usages                    |
+| `⌘⌥B`        | Go to implementation                        |
+| `⌘U`         | Go to super method                          |
+| `⌘G`         | Go to line                                  |
+| `⌥←/→`       | Navigate back/forward                       |
+| `F2` / `⇧F2` | Next/prev error                             |
 
 ### Editing
 
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Ctrl+D` | `⌘D` | Duplicate line |
-| `Ctrl+Y` | `⌘Y` | Delete line |
-| `Ctrl+Shift+Up/Down` | `⌘⇧↑/↓` | Move line up/down |
-| `Ctrl+Alt+L` | `⌘⌥L` | Reformat code |
-| `Ctrl+Alt+I` | `⌘⌥I` | Auto-indent |
-| `Alt+Enter` | `⌥⏎` | Show context actions (quick fix) |
-| `Ctrl+Alt+T` | `⌘⌥T` | Surround with (if/try/catch) |
-| `Ctrl+Shift+V` | `⌘⇧V` | Paste from history |
-
-### Selection
-
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Ctrl+W` | `⌘W` | Extend selection |
-| `Ctrl+Shift+W` | `⌘⇧W` | Shrink selection |
+| Shortcut | Action                           |
+| -------- | -------------------------------- |
+| `⌘D`     | Duplicate line                   |
+| `⌘Y`     | Delete line                      |
+| `⌘⇧↑/↓`  | Move line up/down                |
+| `⌘⌥L`    | Reformat code                    |
+| `⌘⌥I`    | Auto-indent                      |
+| `⌥⏎`     | Show context actions (quick fix) |
+| `⌘⌥T`    | Surround with (if/try/catch)     |
+| `⌘⇧V`    | Paste from history               |
 
 ### Refactoring
 
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Shift+F6` | `⇧F6` | Rename |
-| `Ctrl+Alt+M` | `⌘⌥M` | Extract method |
-| `Ctrl+Alt+V` | `⌘⌥V` | Extract variable |
-| `Ctrl+Alt+F` | `⌘⌥F` | Extract field |
-| `Ctrl+Alt+C` | `⌘⌥C` | Extract constant |
-| `Ctrl+Alt+N` | `⌘⌥N` | Inline |
-| `Ctrl+Alt+Shift+T` | `⌘⌥⇧T` | Refactor this (popup) |
-| `Alt+Delete` | `⌥Delete` | Safe delete |
+| Shortcut  | Action                |
+| --------- | --------------------- |
+| `⇧F6`     | Rename                |
+| `⌘⌥M`     | Extract method        |
+| `⌘⌥V`     | Extract variable      |
+| `⌘⌥F`     | Extract field         |
+| `⌘⌥C`     | Extract constant      |
+| `⌘⌥N`     | Inline                |
+| `⌘⌥⇧T`    | Refactor this (popup) |
+| `⌥Delete` | Safe delete           |
 
 ### Tool Windows
 
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Alt+1-9` | `⌘1-9` | Open tool window N |
-| `Alt+F12` | `⌘0` | Terminal |
-| `Alt+1` | `⌥1` | Project |
-| `Alt+7` | `⌥7` | Structure |
-| `Ctrl+Shift+F12` | `⌘⇧F12` | Hide all windows |
-| `Esc` | `Esc` | Return to editor |
-| `Ctrl+Tab` | `⌃Tab` | Switcher (hold key, arrows) |
+| Shortcut | Action                    |
+| -------- | ------------------------- |
+| `⌘1-9`   | Open tool window N        |
+| `⌘0`     | Terminal                  |
+| `⌥1`     | Project                   |
+| `⌥7`     | Structure                 |
+| `⌘⇧F12`  | Hide all windows          |
+| `Esc`    | Return to editor          |
+| `⌘Tab`   | Switcher (hold ⌘, arrows) |
 
 ### Git/VCS
 
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Ctrl+K` | `⌘K` | Commit |
-| `Ctrl+Shift+K` | `⌘⇧K` | Push |
-| `Ctrl+T` | `⌘T` | Update project |
-| `Ctrl+D` | `⌘D` | Show diff |
-| `Alt+`` ` | `⌥\` ` | VCS quick popup |
+| Shortcut | Action          |
+| -------- | --------------- |
+| `⌘K`     | Commit          |
+| `⌘⇧K`    | Push            |
+| `⌘T`     | Update project  |
+| `⌘D`     | Show diff       |
+| `⌥\`     | VCS quick popup |
 
 ### Debug & Run
 
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Shift+F10` | `⇧F10` | Run |
-| `Shift+F9` | `⇧F9` | Debug |
-| `F8` | `F8` | Step over |
-| `F7` | `F7` | Step into |
-| `Shift+F8` | `⇧F8` | Step out |
-
-### Code Completion
-
-| Linux | macOS | Action |
-|-------|-------|--------|
-| `Ctrl+Space` | `⌃Space` | Basic completion |
-| `Ctrl+Shift+Space` | `⌃⇧Space` | Smart completion |
-| `Ctrl+P` | `⌘P` | Parameter info |
-| `Ctrl+Q` | `⌃J` | Quick documentation |
+| Shortcut | Action    |
+| -------- | --------- |
+| `⇧F10`   | Run       |
+| `⇧F9`    | Debug     |
+| `F8`     | Step over |
+| `F7`     | Step into |
+| `⇧F8`    | Step out  |
 
 ---
 
 ## IdeaVim (Vim Mode)
 
-### Navigation
+> Aligned with Neovim (LazyVim) keybindings. Plugins: surround, multiple-cursors, highlightedyank, ideajoin, which-key, NERDTree.
 
-| Key | Action |
-|-----|--------|
-| `h/j/k/l` | Left/down/up/right |
-| `w/b` | Next/prev word |
-| `gg/G` | Start/end of file |
-| `0/$` | Start/end of line |
-| `Ctrl+d/u` | Half page down/up |
-| `{ / }` | Prev/next paragraph |
-| `%` | Match bracket |
+### Navigation (aligned with nvim LSP)
 
-### Editing
+| Key         | Action                      |
+| ----------- | --------------------------- |
+| `gd`        | Go to declaration           |
+| `gi`        | Go to implementation        |
+| `gr`        | Find usages (references)    |
+| `K`         | Quick docs (hover)          |
+| `Ctrl+o/i`  | Navigate back/forward       |
+| `H` / `L`   | Prev/next tab              |
+| `]d` / `[d` | Next/prev error             |
 
-| Key | Action |
-|-----|--------|
-| `i/a` | Insert before/after |
-| `o/O` | New line below/above |
-| `dd/yy` | Delete/yank line |
-| `cc` | Change line |
-| `x` | Delete char |
-| `p` | Paste |
-| `u/Ctrl+r` | Undo/redo |
-| `ci"/ca"` | Change inside quotes |
-| `ci(/ca(` | Change inside parens |
-| `.` | Repeat last command |
+### Search & Find (aligned with LazyVim)
 
-### Visual Mode
+| Key              | Action             |
+| ---------------- | ------------------ |
+| `Space Space`    | Search Everywhere  |
+| `Space ff`       | Go to file         |
+| `Space sg`       | Find in path       |
+| `Space sr`       | Replace in path    |
+| `Space ss`       | Go to symbol       |
 
-| Key | Action |
-|-----|--------|
-| `v` | Enter visual |
-| `V` | Visual line |
-| `Ctrl+v` | Visual block |
-| `>/<` | Indent/dedent |
-| `y/d/x` | Yank/delete |
+### Code Actions (aligned with LazyVim)
 
-### Search
+| Key         | Action              |
+| ----------- | ------------------- |
+| `Space ca`  | Show intentions     |
+| `Space cr`  | Rename element      |
+| `Space cf`  | Reformat code       |
+| `Space xx`  | Problems tool window|
 
-| Key | Action |
-|-----|--------|
-| `/` / `?` | Search forward/back |
-| `n/N` | Next/prev match |
-| `Ctrl+F` | PhpStorm Find |
+### File Explorer & Windows
+
+| Key         | Action              |
+| ----------- | ------------------- |
+| `Space e`   | Toggle NERDTree     |
+| `Space wd`  | Close window        |
+| `Space ws`  | Split horizontal    |
+| `Space wv`  | Split vertical      |
+| `Space bd`  | Close tab           |
+
+### Git (aligned with LazyVim)
+
+| Key         | Action                |
+| ----------- | --------------------- |
+| `Space gg`  | Version control panel |
+| `]h` / `[h` | Next/prev change marker |
+
+### Text Manipulation (aligned with nvim)
+
+| Key         | Action                       |
+| ----------- | ---------------------------- |
+| `Space d`   | Delete without yank          |
+| `Space y`   | Copy to system clipboard     |
+| `Space Y`   | Copy line to system clipboard|
+| `Space p`   | Paste over (keep register)   |
+| `J`         | Join lines (keep cursor)     |
+| `J` (visual)| Move selection down          |
+| `K` (visual)| Move selection up            |
+
+### Other
+
+| Key         | Action              |
+| ----------- | ------------------- |
+| `jk` / `kj` | Exit insert mode   |
+| `U`         | Redo                |
+| `Space t`   | Terminal            |
+| `Space qq`  | Exit                |
 
 ---
 
-## Custom Leader Mappings ★
+## Recommended .ideavimrc
 
-| Key | Action | Source |
-|-----|--------|--------|
-| `Space f` | Search Everywhere | `~/.ideavimrc` |
-| `Space e` | Project tool window | `~/.ideavimrc` |
-| `Space t` | Terminal tool window | `~/.ideavimrc` |
-| `Space g` | Git tool window | `~/.ideavimrc` |
-| `Space d` | Recently changed files | `~/.ideavimrc` |
-| `jj` | Exit insert mode | `~/.ideavimrc` |
-
----
-
-## Managing with Chezmoi
-
-Your configs are managed by chezmoi:
-
-```bash
-# Edit IdeaVim config
-chezmoi edit ~/.ideavimrc
-chezmoi apply
-
-# See all custom mappings
-chezmoi cat ~/.ideavimrc
-```
+See `~/.ideavimrc` for the full config. Key design decisions:
+- **which-key** plugin enabled -- press `Space` and wait to discover commands
+- **NERDTree** plugin for `Space e` file explorer
+- All `Space` leader bindings match nvim (LazyVim) where possible
+- `gd/gi/gr/K` match nvim LSP bindings
+- `Space d` = delete without yank (same as nvim, not recent files)
 
 ---
 
 ## Tips
 
-1. **Discover actions**: `Ctrl+Shift+A` then type any action name
+1. **Discover actions**: `⌘⇧A` then type any action name
 2. **Key Promoter X**: Plugin that shows shortcuts when you use mouse
 3. **Print keymap**: Help → Keyboard Shortcuts PDF
-4. **IdeaVim actions**: `:action idea.ShowAceActionList`
-5. **macOS function keys**: System Settings → Keyboard → "Use F1, F2, etc. as standard function keys"
+4. **IdeaVim cheat sheet**: `:action idea.ShowAceActionList`
+5. **Conflicts**: If ⌃ shortcuts don't work, check System Settings → Keyboard → "Use F1, F2, etc. as standard function keys"

@@ -1,12 +1,14 @@
 return {
-  -- Smooth scrolling
+  -- Smooth scrolling (Snacks.scroll, built into LazyVim)
   {
-    "karb94/neoscroll.nvim",
-    event = "VeryLazy",
+    "folke/snacks.nvim",
     opts = {
-      mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "zt", "zz", "zb" },
-      hide_cursor = true,
-      stop_eof = true,
+      scroll = {
+        animate = {
+          duration = { step = 10, total = 200 },
+          easing = "linear",
+        },
+      },
     },
   },
   -- Push nvim statusline into tmux bar

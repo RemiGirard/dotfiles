@@ -17,15 +17,19 @@
 
 ## Windows (tabs)
 
-| Key              | Action                   |
-| ---------------- | ------------------------ |
-| `prefix c`       | New window (current dir) |
-| `prefix ,`       | Rename window            |
-| `prefix n` / `p` | Next/prev window         |
-| `prefix 0-9`     | Go to window N           |
-| `prefix <` / `>` | Move window left/right   |
-| `prefix w`       | Window picker            |
-| `prefix &`       | Close window (confirm)   |
+| Key                     | Action                   |
+| ----------------------- | ------------------------ |
+| `Cmd+1-9`              | Go to window N (browser-style) |
+| `Cmd+Shift+[` / `]`   | Prev/next window (browser-style) |
+| `Cmd+t`                | New window (browser-style) |
+| `Cmd+w`                | Close window (browser-style) |
+| `prefix c`             | New window (current dir) |
+| `prefix ,`             | Rename window            |
+| `prefix n` / `p`       | Next/prev window         |
+| `prefix 0-9`           | Go to window N           |
+| `prefix <` / `>`       | Move window left/right   |
+| `prefix w`             | Window picker            |
+| `prefix &`             | Close window (confirm)   |
 
 ## Panes (splits)
 
@@ -63,6 +67,15 @@
 | `prefix r` | Reload config              |
 | `prefix g` | Open lazygit in new window |
 
+## Floating Terminal & Text Hints
+
+| Key        | Action                                        |
+| ---------- | --------------------------------------------- |
+| `prefix F` | Toggle floating terminal (80% overlay)        |
+| `prefix T` | Thumbs: show text hints, type to copy to clipboard |
+
+> **Thumbs**: press `prefix T`, all visible text patterns (URLs, paths, hashes, IPs) get letter hints. Type the hint to copy. Press Shift+hint to copy and show confirmation.
+
 ## Plugins
 
 | Plugin             | What it does                                     |
@@ -73,6 +86,8 @@
 | tmux-continuum     | Auto-save every 30 min, auto-restore on start    |
 | vim-tmux-navigator | `Ctrl+h/j/k/l` shared with nvim                 |
 | vim-tpipeline      | Nvim statusline displayed in tmux status bar     |
+| tmux-floax         | Floating terminal popup (`prefix F`)             |
+| tmux-thumbs        | Text hints to copy visible text (`prefix T`)     |
 
 ## Tips
 

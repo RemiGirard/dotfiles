@@ -1,0 +1,40 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Configure macOS keyboard shortcuts and system preferences
+set -euo pipefail
+
+echo "==> Configuring macOS keyboard shortcuts..."
+
+# Remap "Move focus to next window" from Cmd+` to Option+Tab
+# Key 27 = Move focus to next window
+# Parameters: (charCode, keyCode, modifierFlags)
+# Tab = 48 (keycode), 9 (charcode), 524288 (Option modifier)
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 27 \
+  '{ enabled = 1; value = { parameters = (9, 48, 524288); type = standard; }; }'
+
+echo "==> Configuring Rectangle..."
+
+# Use Spectacle-style default shortcuts
+defaults write com.knollsoft.Rectangle alternateDefaultShortcuts -bool true
+# Allow any shortcut (not just modifiers + arrow keys)
+defaults write com.knollsoft.Rectangle allowAnyShortcut -bool true
+# Cycle through sizes on repeated execution (half -> two-thirds -> one-third)
+defaults write com.knollsoft.Rectangle subsequentExecutionMode -int 1
+# Disable auto-update checks (managed via Homebrew)
+defaults write com.knollsoft.Rectangle SUEnableAutomaticChecks -bool false
+
+# Custom shortcuts:
+# Cmd+Option+B = Toggle Todo (keyCode 11 = B, modifierFlags 786432 = Cmd+Option)
+defaults write com.knollsoft.Rectangle toggleTodo -dict keyCode -int 11 modifierFlags -int 786432
+# Cmd+Option+N = Reflow Todo (keyCode 45 = N, modifierFlags 786432 = Cmd+Option)
+defaults write com.knollsoft.Rectangle reflowTodo -dict keyCode -int 45 modifierFlags -int 786432
+
+echo "==> Installing Hammerspoon (focus guard)..."
+if ! ls /Applications/Hammerspoon.app &>/dev/null; then
+    brew install --cask hammerspoon
+fi
+# Launch Hammerspoon and enable launch at login
+open -a Hammerspoon
+
+echo "==> macOS configuration done. Log out and back in for shortcut changes to take effect."
+{{ end -}}

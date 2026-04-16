@@ -18,7 +18,7 @@ Ctrl+Space f -> pick project -> tmux session created:
   Window 1 [editor]:  nvim
   Window 2 [server]:  pnpm dev
   Window 3 [docker]:  docker compose logs (if compose file exists)
-  Window 4 [agent]:   opencode / claude
+  Window 4 [agent]:   opencode
   Window 5 [term]:    general terminal
 ```
 
@@ -46,12 +46,6 @@ Run in tmux window 4 (agent). Configured with MCP servers (playwright, context7,
 
 ```bash
 oc    # alias for opencode
-```
-
-### Claude Code (terminal agent)
-
-```bash
-cc    # alias for claude
 ```
 
 ### Avante (inside nvim)
