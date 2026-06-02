@@ -242,4 +242,30 @@ end)
 composeActivator:start()
 composeKeyHandler:start()
 
+-- ── Window cycling: Ctrl+Backspace → Cmd+` ──────────────────
+-- Mirrors the tmux pane-switch shortcut for macOS window cycling.
+-- Passes through in terminal apps so tmux keeps its own binding.
+local terminalApps = {
+  ["Ghostty"] = true,
+  ["iTerm2"] = true,
+  ["Terminal"] = true,
+  ["Alacritty"] = true,
+  ["kitty"] = true,
+  ["WezTerm"] = true,
+}
+
+local passingThrough = false
+hs.hotkey.bind({ "ctrl" }, "delete", function()
+  if passingThrough then return end
+  local app = hs.application.frontmostApplication()
+  local name = app and app:name()
+  if name and terminalApps[name] then
+    passingThrough = true
+    hs.eventtap.keyStroke({ "ctrl" }, "delete", 0)
+    passingThrough = false
+  else
+    hs.eventtap.keyStroke({ "cmd" }, "`", 0)
+  end
+end)
+
 hs.notify.new({ title = "Hammerspoon", informativeText = "Config loaded. Focus guard ON. Compose key: Right Alt." }):send()

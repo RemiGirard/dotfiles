@@ -29,3 +29,4 @@ opt.clipboard = "unnamedplus"
 opt.splitbelow = true
 opt.splitright = true
 opt.splitkeep = "screen"
+

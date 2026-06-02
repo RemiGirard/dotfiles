@@ -63,4 +63,5 @@ chezmoi cd               # cd to source dir
 
 - [tmux](cheatsheets/tmux.md) -- Prefix `Ctrl+Space`, splits, sessions
 - [nvim](cheatsheets/nvim.md) -- Leader `Space`, LSP, AI agents
+- [codex](cheatsheets/codex.md) -- Desktop app and CLI shortcuts
 - [workflow](cheatsheets/workflow.md) -- How everything connects

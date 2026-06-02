@@ -31,6 +31,13 @@ autocmd("BufReadPost", {
   end,
 })
 
+autocmd("LspAttach", {
+  group = augroup("inlay_hints", { clear = true }),
+  callback = function(args)
+    vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+  end,
+})
+
 autocmd("BufWritePre", {
   group = augroup("eslint_fix_on_save", { clear = true }),
   pattern = { "*.js", "*.jsx", "*.ts", "*.tsx" },

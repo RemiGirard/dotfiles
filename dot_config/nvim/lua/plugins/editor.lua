@@ -8,11 +8,26 @@ return {
   },
   {
     "christoomey/vim-tmux-navigator",
+    init = function()
+      vim.g.tmux_navigator_no_wrap = 1
+    end,
     keys = {
       { "<C-h>", "<cmd>TmuxNavigateLeft<cr>",  desc = "Navigate left (tmux/nvim)" },
       { "<C-j>", "<cmd>TmuxNavigateDown<cr>",  desc = "Navigate down (tmux/nvim)" },
       { "<C-k>", "<cmd>TmuxNavigateUp<cr>",    desc = "Navigate up (tmux/nvim)" },
       { "<C-l>", "<cmd>TmuxNavigateRight<cr>", desc = "Navigate right (tmux/nvim)" },
+      {
+        "<C-\\>",
+        function()
+          if vim.env.TMUX and vim.env.TMUX_PANE then
+            vim.fn.system({ "tmux", "select-pane", "-t", vim.env.TMUX_PANE, "-l" })
+            return
+          end
+
+          vim.cmd("wincmd p")
+        end,
+        desc = "Navigate previous (tmux/nvim)",
+      },
     },
   },
   {
