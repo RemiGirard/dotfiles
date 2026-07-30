@@ -80,6 +80,7 @@
 | ----------- | -------------------- |
 | `gd`        | Go to definition     |
 | `gr`        | References           |
+| `gn` / `gN` | Next/prev usage or word occurrence |
 | `K`         | Hover docs           |
 | `Space ca`  | Code action          |
 | `Space cr`  | Rename               |
@@ -92,6 +93,7 @@
 | ---------- | -------------------------- |
 | `/pattern` | Search forward             |
 | `n` / `N`  | Next/prev match (centered) |
+| `gn` / `gN` | Next/prev usage or word occurrence |
 | `Space sr` | Replace word under cursor  |
 
 ## Git

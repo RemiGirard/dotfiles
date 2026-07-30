@@ -91,6 +91,7 @@
 | `gd`        | Go to declaration           |
 | `gi`        | Go to implementation        |
 | `gr`        | Find usages (references)    |
+| `gn` / `gN` | Next/prev usage occurrence  |
 | `K`         | Quick docs (hover)          |
 | `Ctrl+o/i`  | Navigate back/forward       |
 | `H` / `L`   | Prev/next tab              |

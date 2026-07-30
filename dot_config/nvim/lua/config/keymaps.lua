@@ -1,5 +1,29 @@
 local map = vim.keymap.set
 
+local function search_word_under_cursor(backward)
+  local word = vim.fn.expand("<cword>")
+  if word == "" then
+    return
+  end
+
+  vim.fn.setreg("/", "\\V\\<" .. vim.fn.escape(word, "\\") .. "\\>")
+  vim.opt.hlsearch = true
+  vim.cmd.normal({ backward and "Nzzzv" or "nzzzv", bang = true })
+end
+
+local function jump_usage(count)
+  count = count or 1
+  if package.loaded["snacks"] and Snacks.words.is_enabled() then
+    local words, current = Snacks.words.get()
+    if current then
+      Snacks.words.jump(count, true)
+      return
+    end
+  end
+
+  search_word_under_cursor(count < 0)
+end
+
 map("n", ";", ":", { desc = "Command mode with ;" })
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 map("i", "kj", "<Esc>", { desc = "Exit insert mode" })
@@ -23,10 +47,11 @@ map("n", "U", "<C-r>", { desc = "Redo" })
 
 map("n", "]q", "<cmd>cnext<cr>zz", { desc = "Next quickfix" })
 map("n", "[q", "<cmd>cprev<cr>zz", { desc = "Prev quickfix" })
+map("n", "gn", function() jump_usage(vim.v.count1) end, { desc = "Next usage/occurrence" })
+map("n", "gN", function() jump_usage(-vim.v.count1) end, { desc = "Prev usage/occurrence" })
 
 map("n", "<leader>sr", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
   { desc = "Replace word under cursor" })
 
 map("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
-
 

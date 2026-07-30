@@ -58,6 +58,9 @@ export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
 typeset -U path
+if [[ "$(uname)" == "Darwin" && -d /opt/homebrew/bin ]]; then
+    path=("/opt/homebrew/bin" "/opt/homebrew/sbin" "$path[@]")
+fi
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$path[@]")
 
 # ── Aliases ───────────────────────────────────────────────────
@@ -87,6 +90,7 @@ alias cz="chezmoi" cza="chezmoi apply" cze="chezmoi edit" czd="chezmoi diff" czu
 # Tmux sessions
 alias ts="tmux-sessionizer"
 alias tp="tmux-project"
+alias twn="tmux-window-name"
 alias tl="tmux ls"
 alias ta="tmux a -t"
 alias tk="tmux kill-session -t"
@@ -177,10 +181,10 @@ export PNPM_HOME="$HOME/.local/share/pnpm"
 # ── OpenCode ─────────────────────────────────────────────────
 [ -d "$HOME/.opencode/bin" ] && path=("$HOME/.opencode/bin" "$path[@]")
 
-# ── Playwright MCP (auto-start if not running) ───────────────
-if command -v playwright-mcp &>/dev/null; then
-    playwright-mcp start &>/dev/null
-fi
+# ── Playwright MCP ───────────────────────────────────────────
+alias mcp-playwright="playwright-mcp start"
+alias mcp-playwright-stop="playwright-mcp stop"
+alias mcp-playwright-status="playwright-mcp status"
 
 # ── Starship (keep last) ─────────────────────────────────────
 command -v starship &>/dev/null && eval "$(starship init zsh)"

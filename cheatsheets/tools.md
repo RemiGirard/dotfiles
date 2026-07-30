@@ -106,6 +106,32 @@ tldr -p osx pbcopy
 
 ---
 
+## pnpm / Corepack
+
+Corepack is installed on macOS and the package installer enables the latest pnpm shim when available.
+
+```bash
+corepack enable                 # Enable package-manager shims
+corepack prepare pnpm@latest --activate
+pnpm install
+pnpm run dev
+r dev                           # zsh alias for: pnpm run dev
+```
+
+---
+
+## Playwright MCP
+
+Playwright MCP is started manually from zsh aliases instead of auto-starting on every shell launch.
+
+```bash
+mcp-playwright          # Start Playwright MCP
+mcp-playwright-stop     # Stop Playwright MCP
+mcp-playwright-status   # Show Playwright MCP status
+```
+
+---
+
 ## dust — Disk Usage Analyzer
 
 Visual, intuitive `du` replacement. Shows a bar chart of what's eating space.

@@ -47,6 +47,7 @@ packages:
       - starship
       - neovim
       - node
+      - corepack
       - rustup
       - opencode-ai/tap/opencode
       - btop

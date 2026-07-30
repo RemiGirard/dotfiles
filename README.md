@@ -61,7 +61,13 @@ chezmoi cd               # cd to source dir
 
 ## Cheatsheets
 
+- [windows](cheatsheets/windows.md) -- Rectangle, macOS window switching, Focus Guard, gTile
 - [tmux](cheatsheets/tmux.md) -- Prefix `Ctrl+Space`, splits, sessions
 - [nvim](cheatsheets/nvim.md) -- Leader `Space`, LSP, AI agents
 - [codex](cheatsheets/codex.md) -- Desktop app and CLI shortcuts
+- [phpstorm](cheatsheets/phpstorm.md) -- IDE navigation, refactors, debugging
+- [sessions](cheatsheets/sessions.md) -- Project/session launch flow
+- [tools](cheatsheets/tools.md) -- CLI tools and command references
+- [accents](cheatsheets/accents.md) -- French accents on the Voyager layout
+- [rust-learning](cheatsheets/rust-learning.md) -- Rust learning notes
 - [workflow](cheatsheets/workflow.md) -- How everything connects

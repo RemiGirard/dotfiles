@@ -1,5 +1,5 @@
 {{- $email := promptStringOnce . "email" "Git email address" "remi.girard@protonmail.com" -}}
-{{- $name := promptStringOnce . "name" "Git name" "RemiGirard" -}}
+{{- $name := promptStringOnce . "name" "Git name" "Remi Girard" -}}
 {{- $signingkey := promptStringOnce . "signingkey" "GPG signing key ID (run 'gpg --list-secret-keys --keyid-format long' to find it, leave empty to skip)" "" -}}
 
 sourceDir = {{ .chezmoi.sourceDir | quote }}

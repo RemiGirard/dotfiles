@@ -103,6 +103,13 @@ if ! command -v node &>/dev/null; then
     sudo apt install -y nodejs
 fi
 
+# ── pnpm via Corepack ────────────────────────────────────────
+if command -v corepack &>/dev/null; then
+    echo "==> Enabling pnpm via Corepack..."
+    corepack enable
+    corepack prepare pnpm@latest --activate
+fi
+
 # ── btop ──────────────────────────────────────────────────────
 if ! command -v btop &>/dev/null; then
     echo "==> Installing btop..."
@@ -204,6 +211,13 @@ brew "{{ . }}"
 cask "{{ . }}"
 {{ end -}}
 EOF
+
+# ── pnpm via Corepack ────────────────────────────────────────
+if command -v corepack &>/dev/null; then
+    echo "==> Enabling pnpm via Corepack..."
+    corepack enable
+    corepack prepare pnpm@latest --activate
+fi
 
 # ── Cargo packages ──────────────────────────────────────────
 if command -v cargo &>/dev/null; then

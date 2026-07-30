@@ -29,6 +29,8 @@ imap kj <Esc>
 nmap gd <Action>(GotoDeclaration)
 nmap gi <Action>(GotoImplementation)
 nmap gr <Action>(FindUsages)
+nmap gn <Action>(GotoNextElementUnderCaretUsage)
+nmap gN <Action>(HighlightUsagesInFile)<Action>(PreviousOccurence)
 nmap K <Action>(QuickJavaDoc)
 nmap <C-o> <Action>(Back)
 nmap <C-i> <Action>(Forward)

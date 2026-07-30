@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Rename the current tmux window from the active directory and git branch.
+
+set -euo pipefail
+
+path="${1:-}"
+in_tmux=0
+
+if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
+    if pane_path="$(tmux display-message -p "#{pane_current_path}" 2>/dev/null)"; then
+        in_tmux=1
+        path="${path:-$pane_path}"
+    fi
+fi
+
+path="${path:-$PWD}"
+
+if [[ ! -d "$path" ]]; then
+    echo "Not a directory: $path" >&2
+    exit 1
+fi
+
+directory="$(basename "$path")"
+branch=""
+
+if git -C "$path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    branch="$(git -C "$path" branch --show-current 2>/dev/null || true)"
+    if [[ -z "$branch" ]]; then
+        branch="$(git -C "$path" rev-parse --short HEAD 2>/dev/null || true)"
+    fi
+fi
+
+if [[ -n "$branch" ]]; then
+    title="$directory - $branch"
+else
+    title="$directory"
+fi
+
+if [[ "$in_tmux" -eq 0 ]]; then
+    echo "$title"
+    exit 0
+fi
+
+tmux rename-window "$title"
+tmux display-message "Window renamed: $title"

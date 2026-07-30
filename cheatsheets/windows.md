@@ -3,24 +3,27 @@
 ## macOS (Rectangle)
 
 > Config tracked in chezmoi (`run_once_configure-macos.sh.tmpl`).
-> Spectacle-style shortcuts enabled. Repeated presses cycle: half → two-thirds → one-third.
+> Repeated presses cycle: half -> two-thirds -> one-third.
 
 | Action | Shortcut |
 |--------|----------|
-| Left Half | `⌃⌥←` |
-| Right Half | `⌃⌥→` |
-| Top Half | `⌃⌥↑` |
-| Bottom Half | `⌃⌥↓` |
+| Left Half | `⌃⌥H` |
+| Bottom Half | `⌃⌥J` |
+| Top Half | `⌃⌥K` |
+| Right Half | `⌃⌥L` |
 | Top-Left Quarter | `⌃⌥U` |
-| Top-Right Quarter | `⌃⌥I` |
-| Bottom-Left Quarter | `⌃⌥J` |
-| Bottom-Right Quarter | `⌃⌥K` |
+| Top-Right Quarter | `⌃⌥O` |
+| Bottom-Left Quarter | `⌃⌥M` |
+| Bottom-Right Quarter | `⌃⌥.` |
 | Center | `⌃⌥C` |
-| Maximize | `⌃⌥⏎` |
-| Next Display | `⌃⌥⌘→` |
-| Previous Display | `⌃⌥⌘←` |
-| Toggle Todo | `⌘⌥B` |
-| Reflow Todo | `⌘⌥N` |
+| Maximize | `⌃⌥F` |
+| Center Third | `⌃⌥⇧T` |
+| Center Half | `⌃⌥⇧C` |
+| Almost Maximize | `⌃⌥⇧F` |
+| Next Display | `⌃⌥I` |
+| Previous Display | `⌃⌥,` |
+| Toggle Todo | `⌃⌥B` |
+| Reflow Todo | `⌃⌥N` |
 
 ## macOS Window Switching
 
