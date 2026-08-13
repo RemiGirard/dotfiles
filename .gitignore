@@ -3,3 +3,9 @@
 .DS_Store
 logs/
 .playwright-mcp/
+
+# Prevent generated screenshots from being committed.
+*.png
+*.jpg
+*.jpeg
+*.webp
