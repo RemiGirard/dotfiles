@@ -2,7 +2,11 @@
 {{- $name := promptStringOnce . "name" "Git name" "Remi Girard" -}}
 {{- $signingkey := promptStringOnce . "signingkey" "GPG signing key ID (run 'gpg --list-secret-keys --keyid-format long' to find it, leave empty to skip)" "" -}}
 
+encryption = "gpg"
 sourceDir = {{ .chezmoi.sourceDir | quote }}
+
+[gpg]
+    recipient = "7D4C5D68EA376C68B941C78DF0D1DCBDDF343EFC"
 
 [data]
     email = {{ $email | quote }}
