@@ -38,6 +38,8 @@
 |--------|-------|--------|
 | Select area and copy to clipboard | `⌃⌥S` | `Ctrl+Alt+S` |
 | Capture full screen and copy to clipboard | `⌃⌥⇧S` | `Ctrl+Alt+Shift+S` |
+| Save selected area | `⌘⇧4` → `~/Pictures/Screenshots` | Screenshot UI → `~/Pictures/Screenshots` |
+| Save full screen | `⌘⇧3` → `~/Pictures/Screenshots` | Screenshot UI → `~/Pictures/Screenshots` |
 
 Paste directly with `⌘V` on macOS or `Ctrl+V` on Ubuntu.
 

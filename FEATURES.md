@@ -45,7 +45,7 @@ Neovim bootstraps the stable `lazy.nvim` branch from `dot_config/nvim/init.lua`;
 - `cheatsheets/`
 - `keyboard/`
 - `keymaps/`
-- generated screenshots, logs, and browser traces
+- `.artifacts/`, loose root screenshots, logs, and browser traces
 
 ---
 
@@ -808,5 +808,5 @@ Result: `Ctrl+h/j/k/l` moves between tmux panes and nvim splits transparently. Y
 | Tool detection | `dot_zshrc` checks `command -v` before using eza, zoxide, fzf, starship, zinit |
 | Source directory | `.chezmoi.toml.tmpl` preserves the source directory chosen by `chezmoi init` |
 | Font installation | Linux: downloaded to `~/.local/share/fonts`; macOS: Homebrew cask |
-| Screenshots | `Ctrl+Option/Alt+S` captures an area; adding `Shift` captures the full screen; both copy to the clipboard |
+| Screenshots | `Ctrl+Option/Alt+S` captures to the clipboard; native saved captures go to `~/Pictures/Screenshots`; repository QA output stays in ignored `.artifacts/` directories |
 | Secrets | Sensitive Playwright environment values are stored as a GPG-encrypted, owner-only chezmoi file |

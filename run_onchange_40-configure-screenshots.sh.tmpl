@@ -1,7 +1,33 @@
-{{ if eq .chezmoi.os "linux" -}}
+{{ if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Keep saved native captures away from the Desktop. The Hammerspoon shortcuts
+# remain clipboard-only for fast paste workflows.
+set -euo pipefail
+
+readonly screenshots_dir="$HOME/Pictures/Screenshots"
+
+mkdir -p "$screenshots_dir"
+defaults write com.apple.screencapture location -string "$screenshots_dir"
+defaults write com.apple.screencapture type -string png
+defaults write com.apple.screencapture include-date -bool true
+defaults write com.apple.screencapture show-thumbnail -bool true
+killall SystemUIServer >/dev/null 2>&1 || true
+
+echo "==> Native screenshots save to $screenshots_dir."
+
+{{ else if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
 # Configure matching area/full-screen shortcuts that copy to the clipboard.
 set -euo pipefail
+
+pictures_dir="$HOME/Pictures"
+if command -v xdg-user-dir >/dev/null 2>&1; then
+    detected_pictures_dir="$(xdg-user-dir PICTURES 2>/dev/null || true)"
+    if [[ -n "$detected_pictures_dir" && "$detected_pictures_dir" != "$HOME" ]]; then
+        pictures_dir="$detected_pictures_dir"
+    fi
+fi
+mkdir -p "$pictures_dir/Screenshots"
 
 readonly media_schema="org.gnome.settings-daemon.plugins.media-keys"
 readonly shortcut_schema="org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
@@ -41,4 +67,5 @@ gsettings set "$shortcut_schema:$full_shortcut_path" command "gnome-screenshot -
 gsettings set "$shortcut_schema:$full_shortcut_path" binding "<Primary><Alt><Shift>s"
 
 echo "==> Screenshot shortcuts configured: Ctrl+Alt+S and Ctrl+Alt+Shift+S"
+echo "==> Saved captures belong in $pictures_dir/Screenshots."
 {{ end -}}

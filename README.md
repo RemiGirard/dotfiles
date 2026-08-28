@@ -66,6 +66,7 @@ chezmoi cd               # cd to source dir
 - `.chezmoiexternal.toml` auto-clones TPM plugins; Neovim bootstraps lazy.nvim
 - Zsh config auto-detects available tools (eza vs exa, etc.)
 - Screenshot shortcuts copy an area (`Ctrl+Option/Alt+S`) or full screen (`Ctrl+Option/Alt+Shift+S`) to the clipboard
+- Native saved screenshots use `~/Pictures/Screenshots`; repository QA output belongs under an ignored `.artifacts/` directory
 - Docker CLI configuration discovers Homebrew plugins from a stable path
 - Sensitive Playwright values are GPG-encrypted and deploy with owner-only permissions
 

@@ -7,14 +7,14 @@ keymaps/
 # Repository-local generated artifacts must never be deployed into $HOME.
 logs/
 .playwright-mcp/
+.artifacts/
 .claude/
 .nvimlog
 *.log
+
+# Loose root captures are artifacts, not home-directory dotfiles. Nested image
+# assets remain manageable when deliberately placed in a source directory.
 *.png
-**/*.png
 *.jpg
-**/*.jpg
 *.jpeg
-**/*.jpeg
 *.webp
-**/*.webp

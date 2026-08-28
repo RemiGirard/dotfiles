@@ -3,12 +3,14 @@
 .DS_Store
 logs/
 .playwright-mcp/
+.artifacts/
 .claude/
 .nvimlog
 *.log
 
-# Prevent generated screenshots from being committed.
-*.png
-*.jpg
-*.jpeg
-*.webp
+# Prevent loose root captures from being committed while allowing intentional
+# images in managed asset directories.
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
