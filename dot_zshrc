@@ -1,5 +1,9 @@
 # ── Homebrew ───────────────────────────────────────────────────
-[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+# Login shells initialize Homebrew in ~/.zprofile. Keep a fallback for shells
+# launched without the login profile, while avoiding a subprocess normally.
+if [[ -x /opt/homebrew/bin/brew && ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 
 # ── Zinit ──────────────────────────────────────────────────────
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
@@ -9,8 +13,17 @@ if command -v zinit &>/dev/null; then
     # 1. Completions: add to fpath before compinit
     zinit light zsh-users/zsh-completions
 
-    # 2. compinit: initialize completion system
-    autoload -Uz compinit && compinit
+    # 2. compinit: use the cache on normal launches and refresh it daily.
+    autoload -Uz compinit
+    zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
+    typeset -a zcompdump_stale
+    zcompdump_stale=("$zcompdump"(N.mh+24))
+    if (( ${#zcompdump_stale[@]} )); then
+        compinit
+    else
+        compinit -C
+    fi
+    unset zcompdump zcompdump_stale
     zinit cdreplay -q
 
     # 3. fzf-tab: must load AFTER compinit
@@ -61,6 +74,9 @@ typeset -U path
 if [[ "$(uname)" == "Darwin" && -d /opt/homebrew/bin ]]; then
     path=("/opt/homebrew/bin" "/opt/homebrew/sbin" "$path[@]")
 fi
+if [[ "$(uname)" == "Darwin" && -d /opt/homebrew/opt/rustup/bin ]]; then
+    path=("/opt/homebrew/opt/rustup/bin" "$path[@]")
+fi
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$path[@]")
 
 # ── Aliases ───────────────────────────────────────────────────
@@ -106,6 +122,11 @@ alias wtr="git wt rm"
 alias ports="lsof -iTCP -sTCP:LISTEN -P -n"
 alias port="lsof -iTCP -sTCP:LISTEN -P -n | grep"
 killport() { lsof -ti:${1:?port required} | xargs kill -9 2>/dev/null && echo "killed port $1" || echo "nothing on port $1"; }
+
+# Toggle the MacBook built-in keyboard (requires Karabiner-Elements)
+if [[ "$(uname)" == "Darwin" ]]; then
+    alias kb="keyboard-toggle"
+fi
 
 # Clipboard (Linux compatibility)
 if [[ "$(uname)" == "Linux" ]]; then

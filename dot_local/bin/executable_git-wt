@@ -57,7 +57,7 @@ case "$cmd" in
     list|ls)
         echo "Worktrees for $repo_name:"
         echo ""
-        git worktree list | while read -r path commit branch; do
+        git worktree list | while read -r path _commit branch; do
             wt_name=$(basename "$path")
             session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
             if tmux has-session -t="$session_name" 2>/dev/null; then
@@ -93,26 +93,65 @@ case "$cmd" in
         session_name="${repo_name}-${branch}"
         session_name=$(echo "$session_name" | tr '.' '_' | tr '/' '-')
 
-        # Kill tmux session
-        tmux kill-session -t "$session_name" 2>/dev/null && echo "Killed session: $session_name"
-
-        # Remove worktree
-        git worktree remove "$worktree_path" 2>/dev/null \
-            && echo "Removed worktree: $worktree_path" \
-            || echo "Worktree not found: $worktree_path"
+        # Keep the session alive if Git refuses a dirty or otherwise unsafe
+        # removal. Only tear it down after the worktree is gone.
+        if git worktree remove "$worktree_path" 2>/dev/null; then
+            tmux kill-session -t "$session_name" 2>/dev/null || true
+            echo "Removed worktree: $worktree_path"
+        else
+            echo "Worktree not removed: $worktree_path"
+        fi
         ;;
 
     clean)
         echo "Cleaning merged worktrees..."
-        git worktree list | tail -n +2 | while read -r path commit branch; do
-            branch_name=$(echo "$branch" | tr -d '[]')
-            if git branch --merged main 2>/dev/null | grep -q "$branch_name"; then
-                wt_name=$(basename "$path")
-                session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+        if git show-ref --verify --quiet refs/heads/main; then
+            base_ref="refs/heads/main"
+        elif git show-ref --verify --quiet refs/heads/master; then
+            base_ref="refs/heads/master"
+        else
+            echo "No local main or master branch found; refusing to clean." >&2
+            exit 1
+        fi
+
+        remove_if_merged() {
+            local path="$1" branch_ref="$2"
+            [[ -n "$path" && "$path" != "$repo_root" ]] || return 0
+            [[ "$branch_ref" == refs/heads/* ]] || return 0
+            [[ "$branch_ref" != "$base_ref" ]] || return 0
+            git show-ref --verify --quiet "$branch_ref" || return 0
+            git merge-base --is-ancestor "$branch_ref" "$base_ref" || return 0
+
+            local branch_name="${branch_ref#refs/heads/}"
+            local wt_name session_name
+            wt_name=$(basename "$path")
+            session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+            if git worktree remove -- "$path" 2>/dev/null; then
                 tmux kill-session -t "$session_name" 2>/dev/null || true
-                git worktree remove "$path" 2>/dev/null && echo "  Removed: $path ($branch_name)"
+                echo "  Removed: $path ($branch_name)"
             fi
-        done
+        }
+
+        worktree_path=""
+        branch_ref=""
+        while IFS= read -r line || [[ -n "$line" ]]; do
+            case "$line" in
+                "worktree "*)
+                    remove_if_merged "$worktree_path" "$branch_ref"
+                    worktree_path="${line#worktree }"
+                    branch_ref=""
+                    ;;
+                "branch "*)
+                    branch_ref="${line#branch }"
+                    ;;
+                "")
+                    remove_if_merged "$worktree_path" "$branch_ref"
+                    worktree_path=""
+                    branch_ref=""
+                    ;;
+            esac
+        done < <(git worktree list --porcelain)
+        remove_if_merged "$worktree_path" "$branch_ref"
         git worktree prune
         echo "Done."
         ;;

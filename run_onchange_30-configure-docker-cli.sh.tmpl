@@ -1,0 +1,41 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Keep Docker CLI plugins discoverable even when Docker Desktop was launched
+# from a translocated path. The Homebrew Compose plugin has a stable location.
+set -euo pipefail
+
+docker_config_dir="${DOCKER_CONFIG:-$HOME/.docker}"
+docker_config_file="$docker_config_dir/config.json"
+plugin_dir="/opt/homebrew/lib/docker/cli-plugins"
+
+if [[ ! -d "$plugin_dir" ]]; then
+    echo "==> Docker CLI plugin directory not found; skipping configuration."
+    exit 0
+fi
+
+mkdir -p "$docker_config_dir"
+umask 077
+config_tmp="$(mktemp "${docker_config_file}.tmp.XXXXXX")"
+trap 'rm -f "$config_tmp"' EXIT
+
+if [[ -f "$docker_config_file" ]]; then
+    jq --arg plugin_dir "$plugin_dir" '
+        .cliPluginsExtraDirs = (
+            ((.cliPluginsExtraDirs // []) + [$plugin_dir])
+            | unique
+        )
+    ' "$docker_config_file" >"$config_tmp"
+else
+    jq -n --arg plugin_dir "$plugin_dir" '{cliPluginsExtraDirs: [$plugin_dir]}' >"$config_tmp"
+fi
+
+if [[ ! -f "$docker_config_file" ]] || ! cmp -s "$config_tmp" "$docker_config_file"; then
+    mv "$config_tmp" "$docker_config_file"
+else
+    rm -f "$config_tmp"
+fi
+chmod 600 "$docker_config_file"
+trap - EXIT
+
+echo "==> Docker CLI plugins configured from $plugin_dir."
+{{ end -}}

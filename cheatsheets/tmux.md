@@ -80,7 +80,6 @@
 
 | Plugin             | What it does                                     |
 | ------------------ | ------------------------------------------------ |
-| tmux-sensible      | Better defaults                                  |
 | tmux-yank          | System clipboard in copy mode                    |
 | tmux-resurrect     | Save: `prefix Ctrl+s`, Restore: `prefix Ctrl+r` |
 | tmux-continuum     | Auto-save every 30 min, auto-restore on start    |

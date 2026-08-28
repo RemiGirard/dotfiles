@@ -12,10 +12,5 @@ else
     echo "    Set manually: Settings → Keyboard → Compose Key → Right Alt"
 fi
 
-echo "==> Installing focus-guard dependencies..."
-if command -v apt &>/dev/null; then
-    sudo apt install -y xdotool xprintidle 2>/dev/null || echo "    Could not install xdotool/xprintidle (run manually: sudo apt install xdotool xprintidle)"
-fi
-
 echo "==> Linux configuration done."
 {{ end -}}

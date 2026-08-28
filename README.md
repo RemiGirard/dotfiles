@@ -2,7 +2,22 @@
 
 Cross-platform (Ubuntu + macOS) dev environment managed with [chezmoi](https://www.chezmoi.io/).
 
-## One-Liner Setup
+## Fresh-Machine Setup
+
+This repository manages an encrypted credentials file. Install GnuPG and import
+the matching private key before the first `chezmoi apply`:
+
+```bash
+# macOS (Homebrew must already be available)
+brew install gnupg
+
+# Ubuntu/Debian
+sudo apt install gnupg
+
+gpg --import /path/to/private-key.asc
+```
+
+Then bootstrap chezmoi:
 
 ```bash
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply RemiGirard
@@ -47,9 +62,14 @@ chezmoi cd               # cd to source dir
 ## Cross-Platform
 
 - `dot_gitconfig.tmpl` uses chezmoi data for email/name/signingkey per machine
-- `run_onchange_install-packages.sh.tmpl` uses apt on Linux, brew on macOS
-- `.chezmoiexternal.toml` auto-clones TPM and lazy.nvim
+- `run_onchange_10-install-packages.sh.tmpl` uses apt on Linux, brew on macOS
+- `.chezmoiexternal.toml` auto-clones TPM plugins; Neovim bootstraps lazy.nvim
 - Zsh config auto-detects available tools (eza vs exa, etc.)
+- Screenshot shortcuts copy an area (`Ctrl+Option/Alt+S`) or full screen (`Ctrl+Option/Alt+Shift+S`) to the clipboard
+- Docker CLI configuration discovers Homebrew plugins from a stable path
+- Sensitive Playwright values are GPG-encrypted and deploy with owner-only permissions
+
+Import the matching private GPG key before initializing a new machine so chezmoi can decrypt managed secrets.
 
 ## Keyboard
 
@@ -58,6 +78,7 @@ chezmoi cd               # cd to source dir
 - Layout: [Oryx configurator](https://configure.zsa.io/voyager/layouts/JmOPQ)
 - Firmware: `keyboard/zsa_voyager_JmOPQ_40vmR4_default-esc.bin`
 - Flash tool: [Keymapp](https://www.zsa.io/flash) (download, open, drag the `.bin` file onto it)
+- macOS: `kb` toggles the MacBook keyboard while an external keyboard is connected (`kb status`, `kb on`, `kb off` are also available)
 
 ## Cheatsheets
 

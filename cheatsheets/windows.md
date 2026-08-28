@@ -2,7 +2,7 @@
 
 ## macOS (Rectangle)
 
-> Config tracked in chezmoi (`run_once_configure-macos.sh.tmpl`).
+> Config tracked in chezmoi (`run_onchange_30-configure-macos.sh.tmpl`).
 > Repeated presses cycle: half -> two-thirds -> one-third.
 
 | Action | Shortcut |
@@ -31,6 +31,15 @@
 |--------|----------|
 | Switch app | `⌘Tab` |
 | Switch window (same app) | `⌥Tab` (remapped from ⌘\`) |
+
+## Screenshots (macOS + Ubuntu)
+
+| Action | macOS | Ubuntu |
+|--------|-------|--------|
+| Select area and copy to clipboard | `⌃⌥S` | `Ctrl+Alt+S` |
+| Capture full screen and copy to clipboard | `⌃⌥⇧S` | `Ctrl+Alt+Shift+S` |
+
+Paste directly with `⌘V` on macOS or `Ctrl+V` on Ubuntu.
 
 ## Focus Guard (Hammerspoon)
 

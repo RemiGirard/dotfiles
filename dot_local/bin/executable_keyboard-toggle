@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+# keyboard-toggle: Toggle the MacBook built-in keyboard via Karabiner-Elements.
+# Usage: keyboard-toggle [toggle|on|off|status]
+
+set -euo pipefail
+
+if [[ "$(uname -s)" != "Darwin" ]]; then
+    echo "keyboard-toggle is only supported on macOS" >&2
+    exit 1
+fi
+
+action="${1:-toggle}"
+case "$action" in
+    toggle|on|off|status) ;;
+    *)
+        echo "Usage: keyboard-toggle [toggle|on|off|status]" >&2
+        exit 2
+        ;;
+esac
+
+karabiner_cli="${KB_KARABINER_CLI:-/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli}"
+karabiner_config="${KB_KARABINER_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/karabiner/karabiner.json}"
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "keyboard-toggle requires jq (brew install jq)" >&2
+    exit 1
+fi
+
+if [[ ! -x "$karabiner_cli" ]]; then
+    echo "Karabiner-Elements is not installed (brew install --cask karabiner-elements)" >&2
+    exit 1
+fi
+
+if [[ ! -f "$karabiner_config" ]]; then
+    echo "Karabiner-Elements has not been configured yet. Open it once and complete its setup." >&2
+    exit 1
+fi
+
+connected_devices=""
+if ! connected_devices="$(
+    # The CLI can wait indefinitely while the Karabiner first-run setup is open.
+    /usr/bin/perl -e 'alarm shift; exec @ARGV' 5 \
+        "$karabiner_cli" --list-connected-devices 2>/dev/null
+)" || \
+   ! jq -e 'type == "array"' >/dev/null 2>&1 <<<"$connected_devices"; then
+    echo "Karabiner-Elements is not running. Open it and complete the macOS permission setup." >&2
+    exit 1
+fi
+
+# Karabiner reports whether a keyboard is built in separately from the stable
+# identifiers stored in karabiner.json. Keep only physical external keyboards.
+external_keyboards="$({
+    jq -c '
+        [
+            .[]
+            | select(
+                .device_identifiers.is_keyboard == true
+                and (.is_built_in_keyboard // false) == false
+                and (.device_identifiers.is_virtual_device // false) == false
+            )
+            | .device_identifiers
+        ]
+        | unique
+    ' <<<"$connected_devices"
+})"
+
+external_count="$(jq 'length' <<<"$external_keyboards")"
+
+is_disabled_for_connected_keyboard="$({
+    jq --argjson targets "$external_keyboards" '
+        [
+            .profiles[]
+            | select(.selected == true)
+            | (.devices // [])[]
+            | select(
+                .identifiers as $identifiers
+                | $targets
+                | any(. == $identifiers)
+            )
+            | (.disable_built_in_keyboard_if_exists // false)
+        ]
+        | any
+    ' "$karabiner_config"
+})"
+
+if [[ "$action" == "status" ]]; then
+    if [[ "$is_disabled_for_connected_keyboard" == "true" ]]; then
+        echo "MacBook keyboard: disabled"
+    else
+        echo "MacBook keyboard: enabled"
+    fi
+    exit 0
+fi
+
+if [[ "$action" != "off" && "$external_count" -eq 0 ]]; then
+    echo "No external keyboard detected. Connect one before disabling the MacBook keyboard." >&2
+    exit 1
+fi
+
+case "$action" in
+    on)     desired_state=true ;;
+    off)    desired_state=false ;;
+    toggle)
+        if [[ "$is_disabled_for_connected_keyboard" == "true" ]]; then
+            desired_state=false
+        else
+            desired_state=true
+        fi
+        ;;
+esac
+
+config_tmp="$(mktemp "${karabiner_config}.tmp.XXXXXX")"
+trap 'rm -f "$config_tmp"' EXIT
+
+if [[ "$action" == "off" ]]; then
+    # Clear every configured trigger so the built-in keyboard remains enabled,
+    # including when a previously configured external keyboard reconnects.
+    jq '
+        .profiles |= map(
+            if .selected == true then
+                .devices |= map(
+                    if .disable_built_in_keyboard_if_exists == true then
+                        .disable_built_in_keyboard_if_exists = false
+                    else
+                        .
+                    end
+                )
+            else
+                .
+            end
+        )
+    ' "$karabiner_config" >"$config_tmp"
+else
+    jq --argjson targets "$external_keyboards" --argjson desired "$desired_state" '
+        .profiles |= map(
+            if .selected == true then
+                .devices = reduce $targets[] as $target (
+                    (.devices // []);
+                    if any(.[]; .identifiers == $target) then
+                        map(
+                            if .identifiers == $target then
+                                .disable_built_in_keyboard_if_exists = $desired
+                            else
+                                .
+                            end
+                        )
+                    else
+                        . + [{
+                            "identifiers": $target,
+                            "disable_built_in_keyboard_if_exists": $desired
+                        }]
+                    end
+                )
+            else
+                .
+            end
+        )
+    ' "$karabiner_config" >"$config_tmp"
+fi
+
+jq -e . "$config_tmp" >/dev/null
+mv "$config_tmp" "$karabiner_config"
+trap - EXIT
+
+if [[ "$desired_state" == "true" ]]; then
+    echo "MacBook keyboard: disabled"
+else
+    echo "MacBook keyboard: enabled"
+fi

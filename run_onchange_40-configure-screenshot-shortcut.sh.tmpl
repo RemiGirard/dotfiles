@@ -1,0 +1,44 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+# Configure matching area/full-screen shortcuts that copy to the clipboard.
+set -euo pipefail
+
+readonly media_schema="org.gnome.settings-daemon.plugins.media-keys"
+readonly shortcut_schema="org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
+readonly area_shortcut_path="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/chezmoi-screenshot/"
+readonly full_shortcut_path="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/chezmoi-screenshot-full/"
+
+if ! command -v gsettings >/dev/null 2>&1; then
+    echo "==> gsettings not found, skipping screenshot shortcut setup."
+    exit 0
+fi
+
+add_shortcut_path() {
+    local shortcut_path="$1"
+    local current_shortcuts
+    current_shortcuts="$(gsettings get "$media_schema" custom-keybindings)"
+
+    case "$current_shortcuts" in
+        *"'$shortcut_path'"*) ;;
+        "@as []"|"[]")
+            gsettings set "$media_schema" custom-keybindings "['$shortcut_path']"
+            ;;
+        *)
+            gsettings set "$media_schema" custom-keybindings "${current_shortcuts%]}, '$shortcut_path']"
+            ;;
+    esac
+}
+
+add_shortcut_path "$area_shortcut_path"
+add_shortcut_path "$full_shortcut_path"
+
+gsettings set "$shortcut_schema:$area_shortcut_path" name "Screenshot area to clipboard"
+gsettings set "$shortcut_schema:$area_shortcut_path" command "gnome-screenshot -a -c"
+gsettings set "$shortcut_schema:$area_shortcut_path" binding "<Primary><Alt>s"
+
+gsettings set "$shortcut_schema:$full_shortcut_path" name "Screenshot full screen to clipboard"
+gsettings set "$shortcut_schema:$full_shortcut_path" command "gnome-screenshot -c"
+gsettings set "$shortcut_schema:$full_shortcut_path" binding "<Primary><Alt><Shift>s"
+
+echo "==> Screenshot shortcuts configured: Ctrl+Alt+S and Ctrl+Alt+Shift+S"
+{{ end -}}

@@ -110,6 +110,17 @@ hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", function(files)
   hs.reload()
 end):start()
 
+-- Screenshot: same physical shortcut as Ctrl+Alt+S on Linux.
+-- Select a screen region and copy it directly to the clipboard.
+hs.hotkey.bind({ "ctrl", "alt" }, "s", function()
+  hs.task.new("/usr/sbin/screencapture", nil, { "-i", "-c" }):start()
+end)
+
+-- Capture the full screen and copy it directly to the clipboard.
+hs.hotkey.bind({ "ctrl", "alt", "shift" }, "s", function()
+  hs.task.new("/usr/sbin/screencapture", nil, { "-c" }):start()
+end)
+
 -- ── Compose Key ─────────────────────────────────────────────
 -- Right Alt triggers compose mode. Then type a two-key sequence to get an accented character.
 -- Same sequences as Linux Compose key. Examples:

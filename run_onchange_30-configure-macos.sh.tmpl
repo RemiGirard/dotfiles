@@ -53,17 +53,23 @@ defaults write com.knollsoft.Rectangle toggleTodo -dict keyCode -int 11 modifier
 # Ctrl+Option+N = Reflow Todo (keyCode 45 = N, modifierFlags 786432 = Ctrl+Option)
 defaults write com.knollsoft.Rectangle reflowTodo -dict keyCode -int 45 modifierFlags -int 786432
 
-# Launch Rectangle so shortcuts are active and macOS can prompt for Accessibility permission.
-open -a Rectangle
-# Start Rectangle automatically on login.
-osascript -e 'tell application "System Events" to if not (exists login item "Rectangle") then make login item at end with properties {name:"Rectangle", path:"/Applications/Rectangle.app", hidden:true}'
-
-echo "==> Installing Hammerspoon (focus guard)..."
-if ! ls /Applications/Hammerspoon.app &>/dev/null; then
-    brew install --cask hammerspoon
+# Launch the package-managed apps and register their login items. A GUI or MDM
+# restriction should not abort the rest of a dotfile apply.
+if [[ -d /Applications/Rectangle.app ]]; then
+    open -a Rectangle || echo "    WARNING: Could not launch Rectangle."
+    osascript -e 'tell application "System Events" to if not (exists login item "Rectangle") then make login item at end with properties {name:"Rectangle", path:"/Applications/Rectangle.app", hidden:true}' \
+        || echo "    WARNING: Could not register Rectangle as a login item."
+else
+    echo "    WARNING: Rectangle is not installed; re-run the package phase."
 fi
-# Launch Hammerspoon and enable launch at login
-open -a Hammerspoon
+
+if [[ -d /Applications/Hammerspoon.app ]]; then
+    open -a Hammerspoon || echo "    WARNING: Could not launch Hammerspoon."
+    osascript -e 'tell application "System Events" to if not (exists login item "Hammerspoon") then make login item at end with properties {name:"Hammerspoon", path:"/Applications/Hammerspoon.app", hidden:true}' \
+        || echo "    WARNING: Could not register Hammerspoon as a login item."
+else
+    echo "    WARNING: Hammerspoon is not installed; re-run the package phase."
+fi
 
 echo "==> macOS configuration done. Log out and back in for shortcut changes to take effect."
 {{ end -}}

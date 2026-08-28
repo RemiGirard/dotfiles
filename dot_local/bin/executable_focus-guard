@@ -15,10 +15,9 @@ LOGFILE="${XDG_RUNTIME_DIR:-/tmp}/focus-guard.log"
 GRACE_PERIOD=1  # seconds after manual input to allow focus changes
 
 guard_loop() {
-    local active_window last_input_time current_input_time new_window
+    local active_window current_input_time new_window
 
     active_window=$(xdotool getactivewindow 2>/dev/null || echo "")
-    last_input_time=$(xprintidle 2>/dev/null || echo "0")
 
     while true; do
         sleep 0.3
@@ -29,7 +28,6 @@ guard_loop() {
         # If no window tracked yet, just track
         if [[ -z "$active_window" ]]; then
             active_window="$new_window"
-            last_input_time="$current_input_time"
             continue
         fi
 
@@ -49,8 +47,6 @@ guard_loop() {
                 notify-send "Focus Guard" "$stealer tried to steal focus" 2>/dev/null || true
             fi
         fi
-
-        last_input_time="$current_input_time"
     done
 }
 

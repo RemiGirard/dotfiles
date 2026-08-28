@@ -23,19 +23,20 @@ Each section lists the **config file** responsible, every setting, plugin, keybi
 ## 1. Chezmoi (Dotfile Manager)
 
 **Config files:**
-- `.chezmoi.toml.tmpl` -- prompts for email, name, signing key on first init; sets `sourceDir` to `~/dotfiles`
+- `.chezmoi.toml.tmpl` -- prompts for email, name, and signing key; preserves the selected source directory and configures GPG encryption
 - `.chezmoidata/packages.yaml` -- declarative package list for Linux and macOS
 - `.chezmoiexternal.toml` -- external git repos auto-cloned by chezmoi
 - `.chezmoiignore` -- files in source that should NOT be deployed to `$HOME`
-- `run_onchange_install-packages.sh.tmpl` -- re-runs when `packages.yaml` changes (sha256 hash)
-- `run_once_install-zinit.sh` -- runs once per machine to install zinit
+- `run_onchange_10-install-packages.sh.tmpl` -- runs first and re-runs when `packages.yaml` changes (sha256 hash)
+- `run_once_20-install-zinit.sh` -- runs after packages, once per machine, to install zinit
 
 ### External Dependencies (auto-cloned)
 
 | Target Path | Source | Refresh |
 | --- | --- | --- |
 | `~/.tmux/plugins/tpm` | `tmux-plugins/tpm` | Every 168h (1 week) |
-| `~/.local/share/nvim/lazy/lazy.nvim` | `folke/lazy.nvim` (stable branch) | Every 168h (1 week) |
+
+Neovim bootstraps the stable `lazy.nvim` branch from `dot_config/nvim/init.lua`; tmux plugins are declared in `.chezmoiexternal.toml`.
 
 ### Ignored (not deployed to $HOME)
 
@@ -43,6 +44,8 @@ Each section lists the **config file** responsible, every setting, plugin, keybi
 - `FEATURES.md`
 - `cheatsheets/`
 - `keyboard/`
+- `keymaps/`
+- generated screenshots, logs, and browser traces
 
 ---
 
@@ -123,7 +126,7 @@ Each section lists the **config file** responsible, every setting, plugin, keybi
 | default-terminal | `tmux-256color` | True color support |
 | terminal-overrides | `xterm-256color:RGB` + undercurl | Colors + wavy underlines for diagnostics |
 | mouse | on | Scroll, click, resize with mouse |
-| history-limit | 50000 | Large scrollback buffer |
+| history-limit | 10000 | Large scrollback buffer without unbounded memory growth |
 | base-index | 1 | Windows start at 1 (not 0) |
 | pane-base-index | 1 | Panes start at 1 |
 | renumber-windows | on | No gaps when closing windows |
@@ -210,29 +213,29 @@ All bindings below are prefixed with `Ctrl+Space` unless noted.
 | Plugin | Purpose |
 | --- | --- |
 | `tmux-plugins/tpm` | Plugin manager itself |
-| `tmux-plugins/tmux-sensible` | Sensible default settings |
 | `tmux-plugins/tmux-yank` | Copy to system clipboard in copy mode |
 | `tmux-plugins/tmux-resurrect` | Save/restore sessions across tmux restarts |
-| `tmux-plugins/tmux-continuum` | Auto-save sessions every 10 min; auto-restore on tmux start |
+| `tmux-plugins/tmux-continuum` | Auto-save sessions every 30 min; auto-restore on tmux start |
 | `christoomey/vim-tmux-navigator` | `Ctrl+h/j/k/l` navigation shared with nvim |
+| `omerxx/tmux-floax` | Floating terminal popup |
+| `fcsonline/tmux-thumbs` | Copy visible URLs, paths, hashes, and other text hints |
 
 ### Plugin Settings
 
 | Setting | Value |
 | --- | --- |
-| resurrect-capture-pane-contents | on |
 | continuum-restore | on |
-| continuum-save-interval | 10 (minutes) |
+| continuum-save-interval | 30 (minutes) |
 
 ---
 
 ## 4. Zsh (Shell)
 
-**Config file:** `dot_zshrc` -> `~/.zshrc`
+**Config files:** `dot_zprofile` -> `~/.zprofile`, `dot_zshrc` -> `~/.zshrc`
 
 ### Plugin Manager: Zinit
 
-Installed by `run_once_install-zinit.sh` from `zdharma-continuum/zinit`.
+Installed by `run_once_20-install-zinit.sh` from `zdharma-continuum/zinit`.
 
 | Plugin | What it does |
 | --- | --- |
@@ -297,6 +300,7 @@ Installed by `run_once_install-zinit.sh` from `zdharma-continuum/zinit`.
 
 - `$HOME/.local/bin`
 - `$HOME/.cargo/bin`
+- `/opt/homebrew/opt/rustup/bin` (macOS)
 - `$HOME/.bun/bin`
 - `$BUN_INSTALL/bin`
 - `$PNPM_HOME`
@@ -357,6 +361,7 @@ All deduplicated via `typeset -U path`.
 | `vim` | `nvim` |
 | `oc` | `opencode` |
 | `cc` | `claude` |
+| `kb` (macOS) | Toggle the MacBook built-in keyboard via Karabiner-Elements |
 
 #### Config Editing (via chezmoi)
 
@@ -670,9 +675,10 @@ LazyVim provides dozens of plugins out of the box (telescope, neo-tree, lualine,
 
 **File:** `dot_config/nvim/lua/plugins/ui.lua`
 
-| Plugin                   | Purpose          | Details                                                                                                      |
-| ------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| `karb94/neoscroll.nvim`  | Smooth scrolling | Animates `Ctrl+u`, `Ctrl+d`, `Ctrl+b`, `Ctrl+f`, `zt`, `zz`, `zb`; hides cursor during scroll; stops at EOF  |
+| Plugin | Purpose | Details |
+| --- | --- | --- |
+| `snacks.nvim` scroll module | Smooth scrolling | Animates scrolling with a short linear transition |
+| `vimpostor/vim-tpipeline` | Shared statusline | Embeds the Neovim statusline in tmux and restores it on exit |
 
 ### Lazy.nvim Settings
 
@@ -689,7 +695,7 @@ LazyVim provides dozens of plugins out of the box (telescope, neo-tree, lualine,
 
 **Config files:**
 - `.chezmoidata/packages.yaml` -- package list
-- `run_onchange_install-packages.sh.tmpl` -- install script
+- `run_onchange_10-install-packages.sh.tmpl` -- install script
 
 On Linux, most tools are installed from **GitHub releases** (not apt) to get the latest versions. On macOS, Homebrew handles everything.
 
@@ -713,6 +719,7 @@ On Linux, most tools are installed from **GitHub releases** (not apt) to get the
 | `jq` | -- | JSON processor |
 | `tree` | -- | Directory tree viewer |
 | `luarocks` | -- | Lua package manager (nvim plugin builds) |
+| `uv` | `pipx` | Isolated Python tool manager used for `smassh` |
 
 ### Linux Only (via apt)
 
@@ -723,6 +730,8 @@ On Linux, most tools are installed from **GitHub releases** (not apt) to get the
 | `python3` + `pip` + `venv` | Python runtime and tools |
 | `xclip` | X11 clipboard integration |
 | `wl-clipboard` | Wayland clipboard integration |
+| `gnome-screenshot` | Area and full-screen captures copied directly to the clipboard |
+| `xdotool` + `xprintidle` | Focus-guard window and idle-time integration |
 | JetBrainsMono Nerd Font | Patched font with icons (installed to `~/.local/share/fonts`) |
 
 ### macOS Only (via Homebrew)
@@ -731,8 +740,11 @@ On Linux, most tools are installed from **GitHub releases** (not apt) to get the
 | --- | --- |
 | `node` | Node.js runtime |
 | `rustup` | Rust toolchain installer |
+| `tlrc` | Maintained `tldr` client |
 | `ghostty` (cask) | Terminal emulator |
 | `font-jetbrains-mono-nerd-font` (cask) | Nerd Font |
+| `karabiner-elements` (cask) | Keyboard control used by the macOS `kb` toggle |
+| `hammerspoon` (cask) | Focus guard, Compose key, and screenshot shortcuts |
 
 ---
 
@@ -791,8 +803,10 @@ Result: `Ctrl+h/j/k/l` moves between tmux panes and nvim splits transparently. Y
 
 | Concern | How it's handled |
 | --- | --- |
-| Package installation | `run_onchange_install-packages.sh.tmpl` uses `{{ if eq .chezmoi.os "linux" }}` for apt, `{{ if eq .chezmoi.os "darwin" }}` for brew |
+| Package installation | `run_onchange_10-install-packages.sh.tmpl` uses `{{ if eq .chezmoi.os "linux" }}` for apt, `{{ if eq .chezmoi.os "darwin" }}` for brew |
 | Git signing key | `dot_gitconfig.tmpl` uses `{{ .signingkey }}` -- different path per machine |
 | Tool detection | `dot_zshrc` checks `command -v` before using eza, zoxide, fzf, starship, zinit |
-| Source directory | `.chezmoi.toml.tmpl` sets `sourceDir` to `~/dotfiles` via `{{ joinPath .chezmoi.homeDir "dotfiles" }}` |
+| Source directory | `.chezmoi.toml.tmpl` preserves the source directory chosen by `chezmoi init` |
 | Font installation | Linux: downloaded to `~/.local/share/fonts`; macOS: Homebrew cask |
+| Screenshots | `Ctrl+Option/Alt+S` captures an area; adding `Shift` captures the full screen; both copy to the clipboard |
+| Secrets | Sensitive Playwright environment values are stored as a GPG-encrypted, owner-only chezmoi file |

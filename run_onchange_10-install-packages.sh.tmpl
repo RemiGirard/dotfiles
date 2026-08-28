@@ -35,9 +35,9 @@ install_gh_deb() {
 # ── Neovim ────────────────────────────────────────────────────
 echo "==> Installing Neovim (latest stable)..."
 curl -Lo /tmp/nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${UARCH}.tar.gz"
-sudo rm -rf /opt/nvim-linux-${UARCH}
+sudo rm -rf "/opt/nvim-linux-${UARCH}"
 sudo tar -C /opt -xzf /tmp/nvim.tar.gz
-sudo ln -sf /opt/nvim-linux-${UARCH}/bin/nvim /usr/local/bin/nvim
+sudo ln -sf "/opt/nvim-linux-${UARCH}/bin/nvim" /usr/local/bin/nvim
 rm -f /tmp/nvim.tar.gz
 
 # ── fzf ───────────────────────────────────────────────────────
@@ -154,18 +154,23 @@ fi
 # ── hyperfine (.deb) ────────────────────────────────────────
 install_gh_deb "sharkdp/hyperfine" "hyperfine_.*_${ARCH}\.deb$" "hyperfine"
 
+# ── Python tools ──────────────────────────────────────────────
+if ! command -v uv &>/dev/null; then
+    echo "==> Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
 # ── smassh (typing practice) ─────────────────────────────────
 if ! command -v smassh &>/dev/null; then
     echo "==> Installing smassh..."
-    pip3 install smassh || pipx install smassh
-fi
-
-# ── rustlings ────────────────────────────────────────────────
-if ! command -v rustlings &>/dev/null; then
-    echo "==> Installing rustlings..."
-    cargo install rustlings 2>/dev/null || {
-        echo "    INFO: rustlings requires cargo. Install Rust first, then re-run."
-    }
+    if command -v uv &>/dev/null; then
+        uv tool install smassh
+    elif command -v pipx &>/dev/null; then
+        pipx install smassh
+    else
+        python3 -m pip install --user smassh
+    fi
 fi
 
 # ── Rust ─────────────────────────────────────────────────────
@@ -174,10 +179,16 @@ if ! command -v rustup &>/dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 fi
 
-# ── OpenCode ─────────────────────────────────────────────────
-if ! command -v opencode &>/dev/null; then
-    echo "==> Installing OpenCode..."
-    curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/refs/heads/main/install | bash
+# Make rustup-installed tools available during this same bootstrap run.
+if [[ -f "$HOME/.cargo/env" ]]; then
+    # shellcheck disable=SC1091
+    source "$HOME/.cargo/env"
+fi
+
+# ── rustlings ────────────────────────────────────────────────
+if command -v cargo &>/dev/null && ! command -v rustlings &>/dev/null; then
+    echo "==> Installing rustlings..."
+    cargo install rustlings
 fi
 
 # ── Set zsh as default shell ──────────────────────────────────
@@ -197,7 +208,18 @@ if ! command -v brew &>/dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-brew bundle --file=/dev/stdin <<EOF
+# Keep `chezmoi apply` predictable: install missing tools but review upgrades
+# separately instead of upgrading the whole developer toolchain implicitly.
+# A manually installed Karabiner app is valid; do not overwrite its driver and
+# permissions merely to transfer ownership to Homebrew.
+bundle_cask_skip="${HOMEBREW_BUNDLE_CASK_SKIP:-}"
+if [[ -d /Applications/Karabiner-Elements.app ]] \
+    && ! brew list --cask karabiner-elements >/dev/null 2>&1; then
+    bundle_cask_skip="${bundle_cask_skip:+$bundle_cask_skip }karabiner-elements"
+fi
+
+HOMEBREW_BUNDLE_CASK_SKIP="$bundle_cask_skip" \
+brew bundle --no-upgrade --file=/dev/stdin <<EOF
 {{ range .packages.darwin.taps -}}
 tap "{{ . }}"
 {{ end -}}
@@ -212,6 +234,16 @@ cask "{{ . }}"
 {{ end -}}
 EOF
 
+# Homebrew's rustup formula is keg-only, so expose its proxy commands before
+# initializing the toolchain or installing Cargo packages.
+if [[ -d /opt/homebrew/opt/rustup/bin ]]; then
+    export PATH="/opt/homebrew/opt/rustup/bin:$HOME/.cargo/bin:$PATH"
+fi
+
+if command -v rustup &>/dev/null; then
+    rustup default stable
+fi
+
 # ── pnpm via Corepack ────────────────────────────────────────
 if command -v corepack &>/dev/null; then
     echo "==> Enabling pnpm via Corepack..."
@@ -224,15 +256,31 @@ if command -v cargo &>/dev/null; then
     command -v rustlings &>/dev/null || cargo install rustlings
 fi
 
+# ── Python tools ──────────────────────────────────────────────
+if ! command -v uv &>/dev/null; then
+    echo "==> Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
 # ── smassh (typing practice) ─────────────────────────────────
-command -v smassh &>/dev/null || pip3 install smassh || pipx install smassh
+if ! command -v smassh &>/dev/null; then
+    if command -v uv &>/dev/null; then
+        uv tool install smassh
+    elif command -v pipx &>/dev/null; then
+        pipx install smassh
+    else
+        python3 -m pip install --user smassh
+    fi
+fi
 
 ZSH_PATH="$(which zsh)"
 if ! grep -qxF "$ZSH_PATH" /etc/shells; then
     echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
 fi
 
-CURRENT_SHELL="$(dscl . -read /Users/$(whoami) UserShell 2>/dev/null | awk '{print $2}')"
+CURRENT_USER="$(id -un)"
+CURRENT_SHELL="$(dscl . -read "/Users/$CURRENT_USER" UserShell 2>/dev/null | awk '{print $2}')"
 if [ "$CURRENT_SHELL" != "$ZSH_PATH" ]; then
     chsh -s "$ZSH_PATH"
 fi

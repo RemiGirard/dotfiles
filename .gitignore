@@ -3,6 +3,8 @@
 .DS_Store
 logs/
 .playwright-mcp/
+.claude/
+.nvimlog
 *.log
 
 # Prevent generated screenshots from being committed.

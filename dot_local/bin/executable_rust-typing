@@ -7,6 +7,7 @@
 #   rust-typing --setup      - clone the Rust book repo
 
 set -euo pipefail
+shopt -s nullglob
 
 BOOK_DIR="${HOME}/.local/share/rust-book"
 TYPING_DIR="${HOME}/.local/share/rust-typing"
@@ -21,7 +22,8 @@ setup() {
         git clone --depth 1 https://github.com/rust-lang/book.git "$BOOK_DIR"
     fi
     extract_all
-    echo "Done! $(ls "$TYPING_DIR"/*.txt 2>/dev/null | wc -l | tr -d ' ') chapters ready."
+    local chapter_files=("$TYPING_DIR"/ch*.txt)
+    echo "Done! ${#chapter_files[@]} chapters ready."
 }
 
 # ── Extract full chapter text from markdown ──────────────────
@@ -108,8 +110,7 @@ case "${1:-}" in
         fi
 
         # Fuzzy pick a chapter
-        selected=$(ls "$TYPING_DIR"/ch*.txt 2>/dev/null \
-            | while read -r f; do
+        selected=$(for f in "$TYPING_DIR"/ch*.txt; do
                 name=$(basename "$f" .txt)
                 lines=$(wc -l < "$f" | tr -d ' ')
                 md="$BOOK_DIR/src/${name}.md"
@@ -139,7 +140,8 @@ case "${1:-}" in
         ;;
     *)
         chapter="$1"
-        file=$(ls "$TYPING_DIR"/${chapter}*.txt 2>/dev/null | head -1)
+        matches=("$TYPING_DIR"/"${chapter}"*.txt)
+        file="${matches[0]:-}"
 
         if [[ -z "$file" ]] || [[ ! -s "$file" ]]; then
             echo "Chapter not found: $chapter"

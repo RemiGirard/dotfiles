@@ -3,3 +3,18 @@ FEATURES.md
 cheatsheets/
 keyboard/
 keymaps/
+
+# Repository-local generated artifacts must never be deployed into $HOME.
+logs/
+.playwright-mcp/
+.claude/
+.nvimlog
+*.log
+*.png
+**/*.png
+*.jpg
+**/*.jpg
+*.jpeg
+**/*.jpeg
+*.webp
+**/*.webp

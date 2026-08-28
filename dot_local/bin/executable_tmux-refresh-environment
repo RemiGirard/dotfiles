@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+# Refresh the global PATH retained by a long-running tmux server.
+set -euo pipefail
+
+if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+typeset -U path
+if [[ -d /opt/homebrew/opt/rustup/bin ]]; then
+    path=("/opt/homebrew/opt/rustup/bin" "$path[@]")
+fi
+path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$path[@]")
+
+tmux set-environment -g PATH "$PATH"

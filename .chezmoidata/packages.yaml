@@ -19,6 +19,9 @@ packages:
       - python3-venv
       - xclip
       - wl-clipboard
+      - gnome-screenshot
+      - xdotool
+      - xprintidle
     # These are installed from GitHub releases for latest versions
     github:
       - fzf
@@ -33,8 +36,7 @@ packages:
       - neovim
 
   darwin:
-    taps:
-      - opencode-ai/tap
+    taps: []
     brews:
       - fzf
       - ripgrep
@@ -49,10 +51,9 @@ packages:
       - node
       - corepack
       - rustup
-      - opencode-ai/tap/opencode
       - btop
       - yq
-      - tldr
+      - tlrc
       - dust
       - difftastic
       - hyperfine
@@ -60,3 +61,5 @@ packages:
       - ghostty
       - font-jetbrains-mono-nerd-font
       - rectangle
+      - karabiner-elements
+      - hammerspoon
