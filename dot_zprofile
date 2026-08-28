@@ -3,13 +3,27 @@ if [[ -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-if [[ -t 0 ]]; then
-    export GPG_TTY="$(tty)"
-fi
-
 typeset -U path
+if [[ -d "$HOME/.local/share/fnm" ]]; then
+    path=("$HOME/.local/share/fnm" "$path[@]")
+fi
 if [[ -d /opt/homebrew/opt/rustup/bin ]]; then
     path=("/opt/homebrew/opt/rustup/bin" "$path[@]")
 fi
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$path[@]")
 export PATH
+
+# Keep login shells (including non-interactive agent commands) on the same
+# Node.js installation as interactive terminals. Non-login interactive shells
+# initialize fnm from .zshrc instead.
+if command -v fnm &>/dev/null; then
+    current_node=$(command -v node 2>/dev/null || true)
+    if [[ -z "${FNM_MULTISHELL_PATH:-}" || "$current_node" != "$FNM_MULTISHELL_PATH/bin/node" ]]; then
+        eval "$(fnm env --shell zsh)"
+    fi
+    unset current_node
+fi
+
+if [[ -t 0 ]]; then
+    export GPG_TTY="$(tty)"
+fi

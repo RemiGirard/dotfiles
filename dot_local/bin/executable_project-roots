@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# project-roots: list Git repositories and worktrees under a projects directory
+# Usage: project-roots [projects-directory]
+
+set -euo pipefail
+
+projects_dir="${1:-${PROJECTS_DIR:-$HOME/Projects}}"
+search_depth="${PROJECT_SEARCH_DEPTH:-6}"
+
+if [[ ! -d "$projects_dir" ]]; then
+    echo "Projects directory not found: $projects_dir" >&2
+    exit 1
+fi
+
+# A worktree has a .git file while a regular checkout has a .git directory.
+# fd is substantially faster in dependency-heavy trees; retain a portable
+# find fallback for a partially bootstrapped machine.
+if command -v fd >/dev/null 2>&1; then
+    finder=(fd)
+elif command -v fdfind >/dev/null 2>&1; then
+    finder=(fdfind)
+else
+    finder=()
+fi
+
+if [[ ${#finder[@]} -gt 0 ]]; then
+    "${finder[@]}" --hidden --type directory --type file '^\.git$' \
+        "$projects_dir" --max-depth "$search_depth" \
+        --exclude node_modules --exclude vendor --exclude target \
+        --exclude build --exclude dist --exclude coverage \
+        --exclude .next --exclude .turbo --exclude .gradle \
+        --exclude .venv --exclude venv --exclude .cache 2>/dev/null
+else
+    find "$projects_dir" -mindepth 2 -maxdepth "$search_depth" \
+        \( -type d -name .git -print -prune \) -o \
+        \( -type d \( \
+            -name node_modules -o -name vendor -o -name target -o \
+            -name build -o -name dist -o -name coverage -o \
+            -name .next -o -name .turbo -o -name .gradle -o \
+            -name .venv -o -name venv -o -name .cache \
+        \) -prune \) -o \
+        \( -type f -name .git -print \) 2>/dev/null
+fi \
+    | sed 's#/.git/*$##' \
+    | LC_ALL=C sort -u

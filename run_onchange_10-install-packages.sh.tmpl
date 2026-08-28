@@ -5,6 +5,16 @@ set -euo pipefail
 
 ARCH=$(dpkg --print-architecture)  # amd64 or arm64
 UARCH=$(uname -m)                 # x86_64 or aarch64
+NODE_VERSION="{{ .toolVersions.node }}"
+PNPM_VERSION="{{ .toolVersions.pnpm }}"
+case "$UARCH" in
+    x86_64) NVIM_ARCH="x86_64" ;;
+    aarch64|arm64) NVIM_ARCH="arm64" ;;
+    *)
+        echo "Unsupported Neovim architecture: $UARCH" >&2
+        exit 1
+        ;;
+esac
 
 echo "==> Installing apt packages..."
 sudo apt update -qq
@@ -34,10 +44,10 @@ install_gh_deb() {
 
 # ── Neovim ────────────────────────────────────────────────────
 echo "==> Installing Neovim (latest stable)..."
-curl -Lo /tmp/nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${UARCH}.tar.gz"
-sudo rm -rf "/opt/nvim-linux-${UARCH}"
+curl -Lo /tmp/nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${NVIM_ARCH}.tar.gz"
+sudo rm -rf "/opt/nvim-linux-${NVIM_ARCH}"
 sudo tar -C /opt -xzf /tmp/nvim.tar.gz
-sudo ln -sf "/opt/nvim-linux-${UARCH}/bin/nvim" /usr/local/bin/nvim
+sudo ln -sf "/opt/nvim-linux-${NVIM_ARCH}/bin/nvim" /usr/local/bin/nvim
 rm -f /tmp/nvim.tar.gz
 
 # ── fzf ───────────────────────────────────────────────────────
@@ -97,17 +107,25 @@ if ! ls "$FONT_DIR"/JetBrainsMonoNerd* &>/dev/null 2>&1; then
 fi
 
 # ── Node.js ─────────────────────────────────────────────────
-if ! command -v node &>/dev/null; then
-    echo "==> Installing Node.js (LTS)..."
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-    sudo apt install -y nodejs
+if ! command -v fnm &>/dev/null; then
+    echo "==> Installing fnm..."
+    curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
+    export PATH="$HOME/.local/share/fnm:$PATH"
+fi
+if command -v fnm &>/dev/null; then
+    eval "$(fnm env --shell bash)"
+    if ! fnm list 2>/dev/null | grep -Fq "v$NODE_VERSION"; then
+        fnm install "$NODE_VERSION"
+    fi
+    fnm default "$NODE_VERSION"
+    fnm use "$NODE_VERSION"
 fi
 
 # ── pnpm via Corepack ────────────────────────────────────────
 if command -v corepack &>/dev/null; then
     echo "==> Enabling pnpm via Corepack..."
     corepack enable
-    corepack prepare pnpm@latest --activate
+    corepack prepare "pnpm@$PNPM_VERSION" --activate
 fi
 
 # ── btop ──────────────────────────────────────────────────────
@@ -192,6 +210,11 @@ if command -v cargo &>/dev/null && ! command -v rustlings &>/dev/null; then
 fi
 
 # ── Set zsh as default shell ──────────────────────────────────
+# Configure global Git LFS filters without installing a hook in this repo.
+if command -v git-lfs &>/dev/null; then
+    git lfs install --skip-repo
+fi
+
 if [ "$SHELL" != "$(which zsh)" ]; then
     echo "==> Setting zsh as default shell..."
     chsh -s "$(which zsh)"
@@ -203,6 +226,9 @@ echo "==> Done! All tools installed from latest GitHub releases."
 #!/bin/bash
 # Packages hash: {{ include ".chezmoidata/packages.yaml" | sha256sum }}
 set -euo pipefail
+
+NODE_VERSION="{{ .toolVersions.node }}"
+PNPM_VERSION="{{ .toolVersions.pnpm }}"
 
 if ! command -v brew &>/dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -244,11 +270,23 @@ if command -v rustup &>/dev/null; then
     rustup default stable
 fi
 
+# ── Node.js via fnm ──────────────────────────────────────────
+# The pinned default matches the active frontend repositories while still
+# allowing project-specific versions through `fnm use`.
+if command -v fnm &>/dev/null; then
+    eval "$(fnm env --shell bash)"
+    if ! fnm list 2>/dev/null | grep -Fq "v$NODE_VERSION"; then
+        fnm install "$NODE_VERSION"
+    fi
+    fnm default "$NODE_VERSION"
+    fnm use "$NODE_VERSION"
+fi
+
 # ── pnpm via Corepack ────────────────────────────────────────
 if command -v corepack &>/dev/null; then
     echo "==> Enabling pnpm via Corepack..."
     corepack enable
-    corepack prepare pnpm@latest --activate
+    corepack prepare "pnpm@$PNPM_VERSION" --activate
 fi
 
 # ── Cargo packages ──────────────────────────────────────────
@@ -272,6 +310,11 @@ if ! command -v smassh &>/dev/null; then
     else
         python3 -m pip install --user smassh
     fi
+fi
+
+# Configure global Git LFS filters without installing a hook in this repo.
+if command -v git-lfs &>/dev/null; then
+    git lfs install --skip-repo
 fi
 
 ZSH_PATH="$(which zsh)"

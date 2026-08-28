@@ -10,16 +10,13 @@ PROJECTS_DIR="${PROJECTS_DIR:-$HOME/Projects}"
 if [[ $# -eq 1 ]]; then
     selected="$1"
 else
-    # Find project dirs (max 2 levels: projects + worktrees)
-    selected=$(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 2 -type d \
-        -not -path '*/node_modules/*' \
-        -not -path '*/.git/*' \
-        -not -path '*/dist/*' \
-        -not -path '*/.next/*' \
-        | sort \
+    # Select only real Git repositories and worktrees, including nested ones.
+    if ! selected=$(project-roots "$PROJECTS_DIR" \
         | fzf --prompt="project> " --height=40% --border --reverse \
               --preview 'ls -la {} | head -20' \
-              --preview-window=right:40%)
+              --preview-window=right:40%); then
+        exit 0
+    fi
 fi
 
 if [[ -z "$selected" ]]; then

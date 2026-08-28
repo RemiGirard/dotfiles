@@ -7,20 +7,27 @@ Ghostty launches tmux automatically (session `main`). No manual `tmux` needed.
 To start a project session instead:
 
 ```bash
-ts                       # fuzzy-find a project from ~/Projects
-tp ~/Projects/myapp      # create full dev layout
+ts                       # fuzzy-find a Git root/worktree from ~/Projects
+tp ~/Projects/myapp      # prepare a named-window project layout
 ```
 
 ## Typical Dev Layout
 
 ```
-Ctrl+Space f -> pick project -> tmux session created:
-  Window 1 [editor]:  nvim
-  Window 2 [server]:  pnpm dev
-  Window 3 [docker]:  docker compose logs (if compose file exists)
-  Window 4 [agent]:   opencode
-  Window 5 [term]:    general terminal
+Ctrl+Space f -> pick Git root/worktree -> tmux session created
+
+tp -> named windows prepared in the project directory:
+  Window 1 [editor]
+  Window 2 [server]
+  Window 3 [docker]  (when a Compose file exists)
+  Window 4 [agent]
+  Window 5 [term]
 ```
+
+The windows are intentionally empty: start `nvim`, the development server,
+Docker, or an agent only where needed. When creating a session,
+`tp --port 3001` exports `PORT=3001` so commands started in its windows inherit
+it. Reattaching does not rewrite environments in existing pane shells.
 
 Switch windows: `Ctrl+Space 1-5`
 
@@ -80,6 +87,17 @@ Space ai    (actions: explain, fix, review)
 | `port 3000`     | Show what's on port 3000  |
 | `killport 3000` | Kill process on port 3000 |
 
+## Node Versions
+
+`fnm` keeps Node 22 as the machine default. Repositories can opt into another
+installed version with their `.nvmrc` or `.node-version`:
+
+```bash
+fnm use          # select the version requested by the current repository
+fnm install      # install that requested version when it is missing
+fnm default 22   # restore the machine default
+```
+
 ## Dotfiles (chezmoi)
 
 ```bash
@@ -87,6 +105,8 @@ cze ~/.zshrc     # chezmoi edit
 czd              # chezmoi diff
 cza              # chezmoi apply
 czu              # chezmoi update (git pull + apply)
+czcheck          # validate source, templates, and live status
+dotfiles-check --full  # include Neovim startup validation
 ```
 
 ## Syncing Machines

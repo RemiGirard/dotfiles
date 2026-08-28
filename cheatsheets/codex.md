@@ -102,8 +102,39 @@ codex doctor             # Diagnose install/config/auth/runtime
 
 ## Config
 
-| File                         | Purpose                         |
-| ---------------------------- | ------------------------------- |
-| `~/.codex/config.toml`       | Main Codex config               |
-| `~/.codex/keybindings.json`  | Custom app keybindings          |
+| File                        | Purpose                                      |
+| --------------------------- | -------------------------------------------- |
+| `~/.codex/config.toml`      | Main Codex config                            |
+| `~/.codex/keybindings.json` | Custom app keybindings                       |
+| `~/.codex/AGENTS.md`        | Shared working agreements for every project |
+| `AGENTS.md`                 | Repository-specific guidance                 |
+| `~/.codex/agents/*.toml`    | Personal custom-agent roles                  |
 
+Codex combines global guidance with the `AGENTS.md` files closest to the
+current working directory. Start a new task after changing those files so the
+instruction chain is rebuilt. See the official [AGENTS.md documentation](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+
+## Custom Agents
+
+This setup manages three focused roles:
+
+| Role               | Best use                                                |
+| ------------------ | ------------------------------------------------------- |
+| `repo_explorer`    | Read-only codebase mapping and evidence gathering       |
+| `reviewer`         | Read-only correctness, security, and regression review  |
+| `browser_debugger` | Reproduce and diagnose browser behavior without editing |
+
+Ask Codex to delegate an independent subtask to one of these roles by name.
+Keep implementation ownership in one agent when several agents are exploring
+in parallel. See the official [subagents documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+
+## Session Storage
+
+```bash
+du -sh ~/.codex/sessions       # Measure saved transcript storage
+codex archive <session>        # Hide a session but keep its transcript
+codex delete <session>         # Permanently remove it after review
+```
+
+Archiving is organizational and does not reclaim transcript space. Prefer the
+supported `codex delete` command over removing session files by hand.

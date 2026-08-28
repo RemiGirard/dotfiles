@@ -20,6 +20,41 @@ if [[ -z "$repo_root" ]]; then
 fi
 repo_name=$(basename "$repo_root")
 
+branch_slug() {
+    # Slashes are path separators, so map them to hyphens for sibling
+    # worktree directories. Git already rejects whitespace and other unsafe
+    # branch-name characters.
+    printf '%s' "$1" | tr '/' '-'
+}
+
+session_name_for_path() {
+    basename "$1" | tr '.' '_' | tr '/' '-'
+}
+
+find_worktree_for_branch() {
+    local target_ref="refs/heads/$1"
+    local candidate_path=""
+    local candidate_branch=""
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        case "$line" in
+            "worktree "*)
+                candidate_path="${line#worktree }"
+                candidate_branch=""
+                ;;
+            "branch "*)
+                candidate_branch="${line#branch }"
+                if [[ "$candidate_branch" == "$target_ref" ]]; then
+                    printf '%s\n' "$candidate_path"
+                    return 0
+                fi
+                ;;
+        esac
+    done < <(git worktree list --porcelain)
+
+    return 1
+}
+
 case "$cmd" in
     add)
         branch="${1:?Usage: git wt add <branch> [--port PORT]}"
@@ -27,25 +62,40 @@ case "$cmd" in
         PORT="${PORT:-3000}"
         while [[ $# -gt 0 ]]; do
             case "$1" in
-                --port) PORT="$2"; shift 2 ;;
+                --port)
+                    if [[ $# -lt 2 ]]; then
+                        echo "Usage: git wt add <branch> [--port PORT]" >&2
+                        exit 2
+                    fi
+                    PORT="$2"
+                    shift 2
+                    ;;
                 *)      shift ;;
             esac
         done
 
-        worktree_path="${repo_root}-${branch}"
-
-        # Create worktree
-        if [[ -d "$worktree_path" ]]; then
+        if worktree_path=$(find_worktree_for_branch "$branch"); then
             echo "Worktree already exists at $worktree_path"
         else
-            git worktree add "$worktree_path" -b "$branch" 2>/dev/null \
-                || git worktree add "$worktree_path" "$branch"
+            slug=$(branch_slug "$branch")
+            worktree_path="${repo_root}-${slug}"
+            if [[ -e "$worktree_path" ]]; then
+                echo "Path already exists and is not the '$branch' worktree: $worktree_path" >&2
+                exit 1
+            fi
+
+            if git show-ref --verify --quiet "refs/heads/$branch"; then
+                git worktree add "$worktree_path" "$branch"
+            elif git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+                git worktree add -b "$branch" --track "$worktree_path" "origin/$branch"
+            else
+                git worktree add "$worktree_path" -b "$branch"
+            fi
             echo "Created worktree: $worktree_path"
         fi
 
         # Create tmux session
-        session_name="${repo_name}-${branch}"
-        session_name=$(echo "$session_name" | tr '.' '_' | tr '/' '-')
+        session_name=$(session_name_for_path "$worktree_path")
 
         if tmux has-session -t="$session_name" 2>/dev/null; then
             echo "Session '$session_name' already exists"
@@ -58,8 +108,7 @@ case "$cmd" in
         echo "Worktrees for $repo_name:"
         echo ""
         git worktree list | while read -r path _commit branch; do
-            wt_name=$(basename "$path")
-            session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+            session_name=$(session_name_for_path "$path")
             if tmux has-session -t="$session_name" 2>/dev/null; then
                 status="[tmux: active]"
             else
@@ -70,10 +119,13 @@ case "$cmd" in
         ;;
 
     switch|sw)
-        worktree=$(git worktree list | fzf --prompt="worktree> " --height=40% --border --reverse | awk '{print $1}')
+        if ! worktree=$(git worktree list --porcelain \
+            | sed -n 's/^worktree //p' \
+            | fzf --prompt="worktree> " --height=40% --border --reverse); then
+            exit 0
+        fi
         if [[ -n "$worktree" ]]; then
-            wt_name=$(basename "$worktree")
-            session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+            session_name=$(session_name_for_path "$worktree")
 
             if ! tmux has-session -t="$session_name" 2>/dev/null; then
                 tmux-project "$worktree"
@@ -89,17 +141,20 @@ case "$cmd" in
 
     rm|remove)
         branch="${1:?Usage: git wt rm <branch>}"
-        worktree_path="${repo_root}-${branch}"
-        session_name="${repo_name}-${branch}"
-        session_name=$(echo "$session_name" | tr '.' '_' | tr '/' '-')
+        if ! worktree_path=$(find_worktree_for_branch "$branch"); then
+            echo "No worktree registered for branch '$branch'" >&2
+            exit 1
+        fi
+        session_name=$(session_name_for_path "$worktree_path")
 
         # Keep the session alive if Git refuses a dirty or otherwise unsafe
         # removal. Only tear it down after the worktree is gone.
-        if git worktree remove "$worktree_path" 2>/dev/null; then
+        if git worktree remove -- "$worktree_path"; then
             tmux kill-session -t "$session_name" 2>/dev/null || true
             echo "Removed worktree: $worktree_path"
         else
-            echo "Worktree not removed: $worktree_path"
+            echo "Worktree not removed: $worktree_path" >&2
+            exit 1
         fi
         ;;
 
@@ -123,9 +178,8 @@ case "$cmd" in
             git merge-base --is-ancestor "$branch_ref" "$base_ref" || return 0
 
             local branch_name="${branch_ref#refs/heads/}"
-            local wt_name session_name
-            wt_name=$(basename "$path")
-            session_name=$(echo "$wt_name" | tr '.' '_' | tr '/' '-')
+            local session_name
+            session_name=$(session_name_for_path "$path")
             if git worktree remove -- "$path" 2>/dev/null; then
                 tmux kill-session -t "$session_name" 2>/dev/null || true
                 echo "  Removed: $path ($branch_name)"

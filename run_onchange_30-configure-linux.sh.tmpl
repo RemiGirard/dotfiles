@@ -4,11 +4,23 @@
 set -euo pipefail
 
 echo "==> Configuring Compose key (Right Alt)..."
-if command -v gsettings &>/dev/null; then
-    gsettings set org.gnome.desktop.input-sources xkb-options "['compose:ralt']"
-    echo "==> Compose key set to Right Alt."
+if command -v gsettings &>/dev/null \
+    && [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* || "${XDG_CURRENT_DESKTOP:-}" == *gnome* ]] \
+    && [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]] \
+    && [[ "$(gsettings writable org.gnome.desktop.input-sources xkb-options 2>/dev/null)" == true ]]; then
+    current_options=$(gsettings get org.gnome.desktop.input-sources xkb-options)
+    if [[ "$current_options" == *"'compose:ralt'"* ]]; then
+        echo "==> Compose key is already set to Right Alt."
+    else
+        case "$current_options" in
+            "[]"|"@as []") updated_options="['compose:ralt']" ;;
+            *) updated_options="${current_options%]}, 'compose:ralt']" ;;
+        esac
+        gsettings set org.gnome.desktop.input-sources xkb-options "$updated_options"
+        echo "==> Compose key added without replacing existing XKB options."
+    fi
 else
-    echo "==> gsettings not found, skipping Compose key setup."
+    echo "==> Active writable GNOME session not found; skipping Compose key setup."
     echo "    Set manually: Settings → Keyboard → Compose Key → Right Alt"
 fi
 

@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
-# tmux-project: create a full dev session with predefined window layout
+# tmux-project: prepare a dev session with predefined empty windows
 # Usage: tmux-project [path] [--port PORT]
 #
-# Creates a tmux session with:
-#   Window 1: nvim (editor)
-#   Window 2: dev server
-#   Window 3: docker compose logs (if docker-compose.yml exists)
-#   Window 4: AI agent (opencode)
-#   Window 5: terminal
+# Creates empty tmux windows named editor, server, docker (when a Compose file
+# exists), agent, and term. Commands are intentionally left for you to start.
+# PORT is exported when the session and its window shells are created.
 
 set -euo pipefail
 
 PORT="${PORT:-3000}"
+port_explicit=0
 selected=""
 
 # Parse args
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --port) PORT="$2"; shift 2 ;;
+        --port)
+            if [[ $# -lt 2 ]]; then
+                echo "Usage: tmux-project [path] [--port PORT]" >&2
+                exit 2
+            fi
+            PORT="$2"
+            port_explicit=1
+            shift 2
+            ;;
         *)      selected="$1"; shift ;;
     esac
 done
@@ -25,13 +31,10 @@ done
 PROJECTS_DIR="${PROJECTS_DIR:-$HOME/Projects}"
 
 if [[ -z "$selected" ]]; then
-    selected=$(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 2 -type d \
-        -not -path '*/node_modules/*' \
-        -not -path '*/.git/*' \
-        -not -path '*/dist/*' \
-        -not -path '*/.next/*' \
-        | sort \
-        | fzf --prompt="project> " --height=40% --border --reverse)
+    if ! selected=$(project-roots "$PROJECTS_DIR" \
+        | fzf --prompt="project> " --height=40% --border --reverse); then
+        exit 0
+    fi
 fi
 
 if [[ -z "$selected" ]]; then
@@ -42,6 +45,13 @@ session_name=$(basename "$selected" | tr '.' '_')
 
 # If session already exists, just attach to it
 if tmux has-session -t="$session_name" 2>/dev/null; then
+    if [[ "$port_explicit" -eq 1 ]]; then
+        existing_port=$(tmux show-environment -t "$session_name" PORT 2>/dev/null || true)
+        existing_port="${existing_port#PORT=}"
+        if [[ "$existing_port" != "$PORT" ]]; then
+            echo "Session '$session_name' already exists with PORT=${existing_port:-unset}; existing pane environments were not changed." >&2
+        fi
+    fi
     if [[ -z "${TMUX:-}" ]]; then
         tmux attach -t "$session_name"
     else
@@ -50,8 +60,8 @@ if tmux has-session -t="$session_name" 2>/dev/null; then
     exit 0
 fi
 
-# Window 1: editor
-tmux new-session -d -s "$session_name" -c "$selected" -n "editor"
+# Window 1: editor. -e sets PORT before tmux starts any window shells.
+tmux new-session -d -s "$session_name" -c "$selected" -n "editor" -e "PORT=$PORT"
 
 # Window 2: server
 tmux new-window -t "$session_name" -c "$selected" -n "server"

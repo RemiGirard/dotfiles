@@ -31,6 +31,9 @@ This will: install chezmoi, clone this repo, prompt for machine-specific setting
 2. In tmux: `Ctrl+Space I` to install tmux plugins
 3. Open `nvim` -- plugins auto-install on first launch
 
+`fnm` provides Node 22 by default. In repositories with a different `.nvmrc` or
+`.node-version`, run `fnm use` after entering the project.
+
 ## What's Inside
 
 | Tool     | Config                      | Purpose                                 |
@@ -41,6 +44,7 @@ This will: install chezmoi, clone this repo, prompt for machine-specific setting
 | Tmux     | `dot_tmux.conf`             | Multiplexer (Ctrl+Space, vim nav, TPM)  |
 | Neovim   | `dot_config/nvim/`          | Editor (LazyVim, TS/Rust/Docker)        |
 | Git      | `dot_gitconfig.tmpl`        | Templated per-machine                   |
+| Codex    | `dot_codex/`                | Global guidance and custom agent roles  |
 
 ## Chezmoi Key Concepts
 
@@ -57,6 +61,8 @@ chezmoi diff             # Preview changes
 chezmoi apply            # Deploy
 chezmoi update           # git pull + apply
 chezmoi cd               # cd to source dir
+dotfiles-check           # Validate source, templates, and live status
+dotfiles-check --full    # Also run the Neovim startup check
 ```
 
 ## Cross-Platform
@@ -69,6 +75,8 @@ chezmoi cd               # cd to source dir
 - Native saved screenshots use `~/Pictures/Screenshots`; repository QA output belongs under an ignored `.artifacts/` directory
 - Docker CLI configuration discovers Homebrew plugins from a stable path
 - Sensitive Playwright values are GPG-encrypted and deploy with owner-only permissions
+- Project pickers list Git repositories and worktrees rather than arbitrary directories
+- Codex gets shared defaults from `~/.codex/AGENTS.md` and focused roles from `~/.codex/agents/`
 
 Import the matching private GPG key before initializing a new machine so chezmoi can decrypt managed secrets.
 

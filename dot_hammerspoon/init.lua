@@ -106,7 +106,7 @@ appWatcher:start()
 focusGuard.protectedWindow = hs.window.focusedWindow()
 
 -- Auto-reload config on changes
-hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", function(files)
+_G.chezmoiConfigWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", function(files)
   hs.reload()
 end):start()
 

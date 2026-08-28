@@ -71,11 +71,11 @@ export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
 typeset -U path
-if [[ "$(uname)" == "Darwin" && -d /opt/homebrew/bin ]]; then
-    path=("/opt/homebrew/bin" "/opt/homebrew/sbin" "$path[@]")
-fi
 if [[ "$(uname)" == "Darwin" && -d /opt/homebrew/opt/rustup/bin ]]; then
     path=("/opt/homebrew/opt/rustup/bin" "$path[@]")
+fi
+if [[ -d "$HOME/.local/share/fnm" ]]; then
+    path=("$HOME/.local/share/fnm" "$path[@]")
 fi
 path=("$HOME/.local/bin" "$HOME/.cargo/bin" "$path[@]")
 
@@ -102,6 +102,7 @@ alias r="pnpm run" v="nvim" vim="nvim"
 alias oc="opencode" cc="claude" rt="rust-typing"
 alias zshrc="chezmoi edit ~/.zshrc" tmuxrc="chezmoi edit ~/.tmux.conf" vimrc="chezmoi edit ~/.config/nvim/init.lua"
 alias cz="chezmoi" cza="chezmoi apply" cze="chezmoi edit" czd="chezmoi diff" czu="chezmoi update"
+alias czcheck="dotfiles-check"
 
 # Tmux sessions
 alias ts="tmux-sessionizer"
@@ -179,9 +180,18 @@ if command -v zoxide &>/dev/null; then
     alias cd="z"
 fi
 
-# ── NVM (lazy) ────────────────────────────────────────────────
-export NVM_DIR="$HOME/.nvm"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
+# ── Node.js version manager ───────────────────────────────────
+# fnm is fast enough to initialize eagerly and keeps interactive shells and
+# non-interactive agents on the same Node installation. NVM remains a fallback
+# on machines where fnm is not installed.
+if command -v fnm &>/dev/null; then
+    current_node=$(command -v node 2>/dev/null || true)
+    if [[ -z "${FNM_MULTISHELL_PATH:-}" || "$current_node" != "$FNM_MULTISHELL_PATH/bin/node" ]]; then
+        eval "$(fnm env --shell zsh)"
+    fi
+    unset current_node
+elif [[ -s "$HOME/.nvm/nvm.sh" ]]; then
+    export NVM_DIR="$HOME/.nvm"
     _nvm_lazy() {
         unfunction _nvm_lazy nvm node npm npx pnpm yarn 2>/dev/null
         source "$NVM_DIR/nvm.sh"

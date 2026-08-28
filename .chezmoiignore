@@ -3,6 +3,8 @@ FEATURES.md
 cheatsheets/
 keyboard/
 keymaps/
+AGENTS.md
+scripts/
 
 # Repository-local generated artifacts must never be deployed into $HOME.
 logs/
@@ -18,3 +20,25 @@ logs/
 *.jpg
 *.jpeg
 *.webp
+
+# Plaintext secrets and private keys must never be deployed from this public
+# source repository. Managed secrets use chezmoi's encrypted_* source format.
+.env
+.env.*
+**/.env
+**/.env.*
+*.pem
+*.key
+**/*.pem
+**/*.key
+**/.secrets
+!.config/opencode/playwright/.secrets
+
+# Keep platform-specific helpers off machines where they cannot run.
+{{ if ne .chezmoi.os "darwin" }}
+.hammerspoon/
+.local/bin/keyboard-toggle
+{{ end }}
+{{ if ne .chezmoi.os "linux" }}
+.local/bin/focus-guard
+{{ end }}

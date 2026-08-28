@@ -14,3 +14,23 @@ logs/
 /*.jpg
 /*.jpeg
 /*.webp
+
+# Plaintext secret material must never enter this public repository.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+**/.secrets
+
+# Chezmoi source-name equivalents for plaintext sensitive targets. Encrypted
+# sources start with encrypted_ and intentionally do not match these entries.
+**/dot_env
+**/dot_env.*
+**/private_dot_env
+**/private_dot_env.*
+**/dot_secrets
+**/private_dot_secrets
+**/dot_ssh/private_id_*
+**/private_dot_ssh/private_id_*
+**/private_dot_gnupg/

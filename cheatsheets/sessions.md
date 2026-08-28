@@ -4,15 +4,16 @@
 
 ```
 One tmux session = one project (or worktree)
-Each session has windows for: editor, server, docker, AI, terminal
+Project layouts prepare windows for: editor, server, docker, AI, terminal
+The windows start empty; launch only the tools that project needs
 Switch between sessions = switch between projects
 ```
 
 ## Quick Start
 
 ```bash
-ts                       # fuzzy-find project, open session
-tp ~/Projects/myapp      # create full dev layout
+ts                       # fuzzy-find Git root/worktree, open session
+tp ~/Projects/myapp      # prepare named empty windows
 wta feature-auth         # create worktree + session for a branch
 Ctrl+Space s             # switch between sessions
 ```
@@ -21,8 +22,8 @@ Ctrl+Space s             # switch between sessions
 
 | Key / Alias           | Action                                         |
 | --------------------- | ---------------------------------------------- |
-| `Ctrl+Space f` / `ts` | Sessionizer: fuzzy-find project, open session |
-| `Ctrl+Space P` / `tp` | Project: create full dev layout               |
+| `Ctrl+Space f` / `ts` | Fuzzy-find a Git root/worktree, open session |
+| `Ctrl+Space P` / `tp` | Prepare a named-window project layout         |
 | `Ctrl+Space s`        | Session picker                                 |
 | `Ctrl+Space (` / `)`  | Prev/next session                              |
 | `tl`                  | List sessions                                  |
@@ -33,12 +34,16 @@ Ctrl+Space s             # switch between sessions
 
 ```
 Session: "myapp"
-  Window 1 [editor] -> nvim
-  Window 2 [server] -> run your dev server
-  Window 3 [docker] -> (only if docker-compose exists)
-  Window 4 [agent]  -> opencode / claude
+  Window 1 [editor] -> start your editor
+  Window 2 [server] -> start the dev server
+  Window 3 [docker] -> optional; only when a Compose file exists
+  Window 4 [agent]  -> start Codex or another agent
   Window 5 [term]   -> general terminal
 ```
+
+When creating a session, `tmux-project --port 3001` exports `PORT=3001` into
+its pane shells. It does not start a server or any other command automatically,
+and reattaching does not rewrite an existing pane's environment.
 
 ## Worktree + Session Management
 
@@ -52,6 +57,10 @@ Worktrees = multiple branches checked out at once, each with its own tmux sessio
 | `wts`                         | Fuzzy-find and switch to a worktree       |
 | `wtr branch`                  | Remove worktree + kill session            |
 | `wt clean`                    | Remove all merged worktrees               |
+
+Branch names containing `/` are normalized for filesystem-safe sibling
+directories. For example, `wta feature/auth` uses a path such as
+`~/Projects/myapp-feature-auth` while keeping the Git branch name unchanged.
 
 ## Example: Parallel AI Work
 
@@ -71,9 +80,9 @@ wta feature-payments --port 3002
 # Switch between them:
 Ctrl+Space s
 
-# Each AI agent only sees its worktree's code:
-#   Session 1, Window 4: opencode (auth code)
-#   Session 2, Window 4: claude (payments code)
+# Start one agent in each worktree's agent window:
+#   Session 1, Window 4: codex (auth code)
+#   Session 2, Window 4: codex (payments code)
 
 # Clean up:
 wtr feature-auth

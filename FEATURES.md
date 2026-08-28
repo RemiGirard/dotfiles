@@ -292,7 +292,7 @@ Installed by `run_once_20-install-zinit.sh` from `zdharma-continuum/zinit`.
 | `XDG_CONFIG_HOME` | `$HOME/.config` |
 | `XDG_DATA_HOME` | `$HOME/.local/share` |
 | `XDG_CACHE_HOME` | `$HOME/.cache` |
-| `NVM_DIR` | `$HOME/.nvm` |
+| `FNM_MULTISHELL_PATH` | Managed by fnm for the active Node.js version |
 | `BUN_INSTALL` | `$HOME/.bun` |
 | `PNPM_HOME` | `$HOME/.local/share/pnpm` |
 
@@ -380,6 +380,7 @@ All deduplicated via `typeset -U path`.
 | `cze` | `chezmoi edit` |
 | `czd` | `chezmoi diff` |
 | `czu` | `chezmoi update` |
+| `czcheck` | `dotfiles-check` |
 
 #### Zoxide
 
@@ -397,9 +398,12 @@ All deduplicated via `typeset -U path`.
 | `Ctrl+R` | Fuzzy history search (via fzf key-bindings.zsh) |
 | Layout | Border, reverse, 40% height |
 
-### NVM (Lazy-loaded)
+### Node.js Versions (fnm)
 
-Functions `nvm`, `node`, `npm`, `npx` are stub wrappers. On first call, they unset themselves, source `$NVM_DIR/nvm.sh`, then run the real command. This avoids 200-400ms shell startup penalty.
+fnm initializes in login and interactive shells so terminal commands and agents
+use the same default Node 22 toolchain. Use `fnm use` inside a repository that
+declares another version. The existing NVM installation remains a fallback on
+machines where fnm is unavailable.
 
 ### Starship Prompt
 
@@ -719,6 +723,8 @@ On Linux, most tools are installed from **GitHub releases** (not apt) to get the
 | `jq` | -- | JSON processor |
 | `tree` | -- | Directory tree viewer |
 | `luarocks` | -- | Lua package manager (nvim plugin builds) |
+| `git-lfs` | -- | Global Git LFS filters without editing individual repositories |
+| `shellcheck` | -- | Shell-script validation via `dotfiles-check` |
 | `uv` | `pipx` | Isolated Python tool manager used for `smassh` |
 
 ### Linux Only (via apt)
@@ -739,6 +745,7 @@ On Linux, most tools are installed from **GitHub releases** (not apt) to get the
 | Package | Purpose |
 | --- | --- |
 | `node` | Node.js runtime |
+| `fnm` | Fast Node.js version manager; Node 22 is the default |
 | `rustup` | Rust toolchain installer |
 | `tlrc` | Maintained `tldr` client |
 | `ghostty` (cask) | Terminal emulator |

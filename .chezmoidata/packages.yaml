@@ -1,3 +1,7 @@
+toolVersions:
+  node: 22.22.0
+  pnpm: 11.24.0
+
 packages:
   common:
     - git
@@ -9,6 +13,8 @@ packages:
     - jq
     - tree
     - luarocks
+    - git-lfs
+    - shellcheck
 
   linux:
     apt:
@@ -50,6 +56,7 @@ packages:
       - neovim
       - node
       - corepack
+      - fnm
       - rustup
       - btop
       - yq

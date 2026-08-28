@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source_dir=$(chezmoi source-path)
+exec "$source_dir/scripts/check.sh" "$@"
